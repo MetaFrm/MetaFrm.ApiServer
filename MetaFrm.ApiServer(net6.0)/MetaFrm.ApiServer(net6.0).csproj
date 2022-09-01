@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MetaFrm.ApiServer</RootNamespace>
+    <AssemblyName>MetaFrm.ApiServer</AssemblyName>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>MetaFrm.ApiServer.net6.0</PackageId>
+    <Version>6.0.0</Version>
+    <Authors>dsun</Authors>
+    <Company>Meta Framework</Company>
+    <Copyright>Copyright 2022. dsun all rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/dsuny/MetaFrm.ApiServer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dsuny/MetaFrm.ApiServer</RepositoryUrl>
+    <PackageTags>meta;framework;dotnet;maui;</PackageTags>
+	
+	<SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss:fffZ"))</SourceRevisionId>
+	
+	<ApplicationIcon>icon.ico</ApplicationIcon>
+	
+	<Title>Meta Framework ApiServer</Title>
+	
+	<Product>Meta Framework ApiServer</Product>
+	
+	<Description>Meta Framework
+(Multi platform &amp; Meta management)</Description>
+	
+	<PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="dat\**" />
+    <Content Remove="dat\**" />
+    <EmbeddedResource Remove="dat\**" />
+    <None Remove="dat\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\JoinAccessCodeController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\Auth\Authorize.cs" Link="Auth\Authorize.cs" />
+    <Compile Include="..\src\Auth\AuthorizeFilter.cs" Link="Auth\AuthorizeFilter.cs" />
+    <Compile Include="..\src\Auth\AuthorizeToken.cs" Link="Auth\AuthorizeToken.cs" />
+    <Compile Include="..\src\Controllers\AccessCodeController.cs" Link="Controllers\AccessCodeController.cs" />
+    <Compile Include="..\src\Controllers\AssemblyAttributeController.cs" Link="Controllers\AssemblyAttributeController.cs" />
+    <Compile Include="..\src\Controllers\AssemblyController.cs" Link="Controllers\AssemblyController.cs" />
+    <Compile Include="..\src\Controllers\LoginController.cs" Link="Controllers\LoginController.cs" />
+    <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
+    <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MetaFrm.Core.net6.0" Version="6.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Auth\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

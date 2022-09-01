@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32611.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFrm.ApiServer(net6.0)", "MetaFrm.ApiServer(net6.0)\MetaFrm.ApiServer(net6.0).csproj", "{FDCB7554-17AA-4B3A-8586-207F0E9E0914}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6FB37B83-4A79-4C77-AE0E-30B5245FBF91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers", "{CCD9FD40-A0CE-4836-A674-9EF4D4D21600}"
+	ProjectSection(SolutionItems) = preProject
+		src\Controllers\AccessCodeController.cs = src\Controllers\AccessCodeController.cs
+		src\Controllers\AssemblyAttributeController.cs = src\Controllers\AssemblyAttributeController.cs
+		src\Controllers\AssemblyController.cs = src\Controllers\AssemblyController.cs
+		src\Controllers\LoginController.cs = src\Controllers\LoginController.cs
+		src\Controllers\ProjectServiceController.cs = src\Controllers\ProjectServiceController.cs
+		src\Controllers\ServiceController.cs = src\Controllers\ServiceController.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{60806BEC-8D59-4CA0-85FC-EDF23E262230}"
+	ProjectSection(SolutionItems) = preProject
+		src\Auth\Authorize.cs = src\Auth\Authorize.cs
+		src\Auth\AuthorizeFilter.cs = src\Auth\AuthorizeFilter.cs
+		src\Auth\AuthorizeToken.cs = src\Auth\AuthorizeToken.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "솔루션 항목", "솔루션 항목", "{B021CFFB-2B48-4714-9AFB-BC653F44C5D6}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		license = license
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4B9E71C4-F9DE-445A-8C8B-CB1DF2D40778}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{DB869435-5F91-4CE2-981F-3EFC20A4A64A}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDCB7554-17AA-4B3A-8586-207F0E9E0914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDCB7554-17AA-4B3A-8586-207F0E9E0914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDCB7554-17AA-4B3A-8586-207F0E9E0914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDCB7554-17AA-4B3A-8586-207F0E9E0914}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CCD9FD40-A0CE-4836-A674-9EF4D4D21600} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
+		{60806BEC-8D59-4CA0-85FC-EDF23E262230} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
+		{DB869435-5F91-4CE2-981F-3EFC20A4A64A} = {4B9E71C4-F9DE-445A-8C8B-CB1DF2D40778}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BE3F2316-703F-4F14-91A0-F0E141FAA7CC}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>MetaFrm</RootNamespace>
+    <AssemblyName>MetaFrm.ApiServer</AssemblyName>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>MetaFrm.ApiServer.net5.0</PackageId>
+    <Version>5.0.0</Version>
+    <Authors>dsun</Authors>
+    <Company>MetaFrm</Company>
+    <Copyright>Copyright 2022. DSUN all rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/dsuny/MetaFrm.Api</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dsuny/MetaFrm.Api</RepositoryUrl>
+    <PackageTags>meta;framework;dotnet;</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\Auth\Authorize.cs" Link="Auth\Authorize.cs" />
+    <Compile Include="..\src\Auth\AuthorizeFilter.cs" Link="Auth\AuthorizeFilter.cs" />
+    <Compile Include="..\src\Auth\AuthorizeToken.cs" Link="Auth\AuthorizeToken.cs" />
+    <Compile Include="..\src\Controllers\AssemblyAttributeController.cs" Link="Controllers\AssemblyAttributeController.cs" />
+    <Compile Include="..\src\Controllers\AssemblyController.cs" Link="Controllers\AssemblyController.cs" />
+    <Compile Include="..\src\Controllers\LoginController.cs" Link="Controllers\LoginController.cs" />
+    <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
+    <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MetaFrm.Core\MetaFrm.Core(net5.0)\MetaFrm.Core(net5.0).csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Auth\" />
+  </ItemGroup>
+
+</Project>
