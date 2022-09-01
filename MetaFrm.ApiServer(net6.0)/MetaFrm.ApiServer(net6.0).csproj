@@ -13,8 +13,8 @@
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2022. dsun all rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/dsuny/MetaFrm.ApiServer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/dsuny/MetaFrm.ApiServer</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</RepositoryUrl>
     <PackageTags>meta;framework;dotnet;maui;</PackageTags>
 	
 	<SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss:fffZ"))</SourceRevisionId>
@@ -59,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MetaFrm.Core.net6.0" Version="6.0.0" />
+    <PackageReference Include="MetaFrm.Core.net6.0" Version="6.0.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
   </ItemGroup>
