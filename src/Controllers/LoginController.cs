@@ -49,7 +49,7 @@ namespace MetaFrm.ApiServer.Controllers
             };
 
             password = password.AesDecryptorToBase64String(email, token);
-            email = email.AesDecryptorToBase64String("MetaFrm", token);
+            email = email.AesDecryptorToBase64String(token, "MetaFrm");
 
             data["1"].CommandText = "[dbo].[USP_LOGIN]";
             data["1"].CommandType = System.Data.CommandType.StoredProcedure;
@@ -97,7 +97,7 @@ namespace MetaFrm.ApiServer.Controllers
                     return new UserInfo()
                     {
                         Status = Status.OK,
-                        Token = keyValuePairs.AesEncryptAndSerialize("MetaFrm", token),
+                        Token = keyValuePairs.AesEncryptAndSerialize(token, "MetaFrm"),
                     };
                 }
                 else

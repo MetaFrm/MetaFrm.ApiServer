@@ -71,7 +71,7 @@ namespace MetaFrm.ApiServer.Controllers
                         string? accessCode = response.DataSet.DataTables[0].DataRows[0].String("ACCESS_CODE");
 
                         if (accessCode != null)
-                            return accessCode.AesEncryptToBase64String("MetaFrm", token);
+                            return accessCode.AesEncryptToBase64String(token, "MetaFrm");
 
                         throw new MetaFrmException("Access Code generation failed.");
                     }
