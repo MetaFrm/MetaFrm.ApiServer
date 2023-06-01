@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "master" ]
 env:
-  DLL_ID: 0
+  DLL_ID: ${{secrets.DLL_ID}}
   UPLOAD_MODURE: "N"
   PUSH_NUGET: "N"
 
