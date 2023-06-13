@@ -52,6 +52,7 @@
     <Compile Include="..\src\Controllers\LoginController.cs" Link="Controllers\LoginController.cs" />
     <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
     <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
+    <Compile Include="..\src\Program.cs" Link="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
