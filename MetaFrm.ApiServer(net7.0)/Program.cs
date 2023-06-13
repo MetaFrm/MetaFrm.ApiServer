@@ -10,10 +10,7 @@ try
 
     IConfigurationRoot configuration = builder1.Build();
 
-    string baseAddress = GetValue(configuration, "MetaFrm.Factory.BaseAddress");
-    string accessKey = GetValue(configuration, "MetaFrm.Factory.AccessKey");
-
-    Factory.Init(baseAddress, accessKey, DevicePlatform.Server);
+    Factory.Init(GetValue(configuration, "MetaFrm.Factory.BaseAddress") ?? "", GetValue(configuration, "MetaFrm.Factory.AccessKey") ?? "", DevicePlatform.Server);
 }
 catch (Exception e)
 {
@@ -55,7 +52,7 @@ Authorize.LoadToken();//저장된 토큰 불러오기
 app.Run();
 
 
-static string GetValue(IConfigurationRoot configuration, string Path)
+static string? GetValue(IConfigurationRoot configuration, string Path)
 {
     IConfigurationSection? configurationSection;
     string[] vs;
