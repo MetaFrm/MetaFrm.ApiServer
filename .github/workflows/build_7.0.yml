@@ -8,7 +8,7 @@ on:
 env:
   DLL_ID: ${{secrets.DLL_ID_7}} # NET버전
   UPLOAD_MODURE: "N" # 고정
-  PUSH_NUGET: "N" # 고정 
+  PUSH_NUGET: "N" # 고정
 
 jobs:
   build7:
