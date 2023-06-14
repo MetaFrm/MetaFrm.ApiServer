@@ -7,6 +7,8 @@ namespace MetaFrm.ApiServer.Auth
     /// </summary>
     public class Authorize : TypeFilterAttribute
     {
+        static object lockObject = new object();
+
         static readonly string path = $"{Factory.FolderPathDat}AuthorizeTokenList.dat";
 
         internal static Dictionary<string, AuthorizeToken> AuthorizeTokenList = new();
@@ -50,41 +52,45 @@ namespace MetaFrm.ApiServer.Auth
         }
         private static AuthorizeToken AddAuthorizeTokenList(AuthorizeToken token, decimal projectID, decimal serviceID)
         {
-            if (AuthorizeTokenList == null || AuthorizeTokenList.Count == 0)
-                LoadToken();
-
-            AuthorizeTokenExpiredListDelete();
-
             if (AuthorizeTokenList != null && token.Token != null)
             {
-                //var projectServiceBase = AuthorizeTokenList.Where(x => x.Value.ProjectServiceBase.ProjectID == projectID && x.Value.ProjectServiceBase.ServiceID == serviceID);
+                lock (lockObject)
+                {
+                    //var projectServiceBase = AuthorizeTokenList.Where(x => x.Value.ProjectServiceBase.ProjectID == projectID && x.Value.ProjectServiceBase.ServiceID == serviceID);
 
-                //if (projectServiceBase != null && projectServiceBase.Any())
-                //    projectServiceBase.FirstOrDefault().Value.ExpiryDateTime = DateTime.UtcNow;
+                    //if (projectServiceBase != null && projectServiceBase.Any())
+                    //    projectServiceBase.FirstOrDefault().Value.ExpiryDateTime = DateTime.UtcNow;
 
-                AuthorizeTokenList.Add(token.Token, token);
+                    AuthorizeTokenList.Add(token.Token, token);
+                }
             }
 
-            try
-            {
-                Factory.SaveInstance(AuthorizeTokenList, path);
-            }
-            catch (Exception)
-            {
-            }
+            if (AuthorizeTokenList != null)
+                lock (lockObject)
+                {
+                    try
+                    {
+                        Factory.SaveInstance(AuthorizeTokenExpiredListDelete(new(AuthorizeTokenList)), path);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
 
             return token;
         }
-        private static void AuthorizeTokenExpiredListDelete()
+        private static Dictionary<string, AuthorizeToken> AuthorizeTokenExpiredListDelete(Dictionary<string, AuthorizeToken> authorizeToken)
         {
-            List<string> authorizeTokenListDelete = new();
+            List<string> delete = new();
 
-            foreach (var item in AuthorizeTokenList.Keys)
-                if (AuthorizeTokenList[item].IsExpired)
-                    authorizeTokenListDelete.Add(item);
+            foreach (var item in authorizeToken.Keys)
+                if (authorizeToken[item].IsExpired)
+                    delete.Add(item);
 
-            foreach (var item in authorizeTokenListDelete)
-                AuthorizeTokenList.Remove(item);
+            foreach (var item in delete)
+                authorizeToken.Remove(item);
+
+            return authorizeToken;
         }
 
         /// <summary>
