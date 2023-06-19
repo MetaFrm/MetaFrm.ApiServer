@@ -78,7 +78,7 @@ namespace MetaFrm.ApiServer.Controllers
 
                         if (projectService != null && !ProjectServices.ContainsKey(key))
                         {
-                            projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, TimeSpan.FromDays(365), projectService.Token).GetToken;
+                            projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
                             ProjectServices.Add(key, projectService);
                             Factory.SaveInstance(projectService, path);
                         }

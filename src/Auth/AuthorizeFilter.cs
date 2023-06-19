@@ -7,7 +7,7 @@ namespace MetaFrm.ApiServer.Auth
     /// <summary>
     /// AuthorizeFilter
     /// </summary>
-    public class AuthorizeFilter : IAuthorizationFilter
+    public class AuthorizeFilter : IAuthorizationFilter, ICore
     {
         /// <summary>
         /// AuthorizeFilter class 생성자
@@ -20,49 +20,44 @@ namespace MetaFrm.ApiServer.Auth
         /// <param name="context"></param>
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var token = context.HttpContext.Request.Headers["token"];
+            string? token = context.HttpContext.Request.Headers["token"];
+
+            if (token == null)
+            {
+                context.Result = new UnauthorizedObjectResult("Authorization failed.");//인증 오류
+                return;
+            }
 
             switch (context.HttpContext.Request.Path.Value)
             {
                 case "/api/AccessCode":
-                    var accessGroup = context.HttpContext.Request.Headers["accessGroup"];
-
-                    if (Authorize.AuthorizeTokenList.Any(x => x.Key == token))
+                    if (Authorize.IsToken(token))
                         return;
 
+                    var accessGroup = context.HttpContext.Request.Headers["accessGroup"];
 
                     if (accessGroup == "JOIN")
                     {
                         var projectServiceBase1 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                        if (accessGroup == "JOIN" && (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectID))
+                        if (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectID)
                             throw new MetaFrmException("Token error.");
                     }
-
-                    if (accessGroup == "JOIN")
-                        return;
-
-                    break;
+                    return;
 
                 case "/api/Service":
-                    if (Authorize.AuthorizeTokenList.Any(x => x.Key == token))
+                    if (Authorize.IsToken(token))
                         return;
 
                     var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
                     if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectID))
                         throw new MetaFrmException("Token error.");
-
-                    if (projectServiceBase2.ProjectID == Factory.ProjectID)
-                        return;
-
-                    break;
+                    return;
             }
 
-            if (!Authorize.AuthorizeTokenList.ContainsKey(token) || Authorize.AuthorizeTokenList[token].IsExpired)
-            {
+            if (!Authorize.IsToken(token))
                 context.Result = new UnauthorizedObjectResult("Authorization failed.");//인증 오류
-            }
 
             //var hasClaim = context.HttpContext.User.Claims.Any(c => c.Type == _claim.Type && c.Value == _claim.Value);
             //if (!hasClaim)

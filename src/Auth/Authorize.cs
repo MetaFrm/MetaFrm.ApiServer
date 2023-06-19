@@ -1,22 +1,82 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MetaFrm.Database;
+using MetaFrm.Service;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MetaFrm.ApiServer.Auth
 {
     /// <summary>
     /// Authorize
     /// </summary>
-    public class Authorize : TypeFilterAttribute
+    public class Authorize : TypeFilterAttribute, ICore
     {
-        static object lockObject = new object();
+        static Authorize? Instance;
+
+        static string? Type = "FILE";
+
+        static readonly object lockObject = new();
 
         static readonly string path = $"{Factory.FolderPathDat}AuthorizeTokenList.dat";
 
         internal static Dictionary<string, AuthorizeToken> AuthorizeTokenList = new();
 
         /// <summary>
-        /// LoadToken
+        /// Authorize class 생성자
         /// </summary>
-        public static void LoadToken()
+        public Authorize() : base(typeof(AuthorizeFilter))
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                LoadToken();
+            }
+        }
+
+        private static void LoadToken()
+        {
+            Type = Instance == null ? "FILE" : Instance.GetAttribute("Type");
+
+            switch (Type)
+            {
+                case "DB":
+                    LoadTokenDB();
+                    break;
+                case "FILE":
+                    LoadTokenFile();
+                    break;
+            }
+        }
+        private static void LoadTokenDB()
+        {
+            IService service;
+            Response response;
+
+            if (Instance == null) return;
+
+            ServiceData data = new();
+            data["1"].CommandText = Instance.GetAttribute("Select");
+            data["1"].AddParameter("ACCESSKEY", DbType.NVarChar, 100, Factory.AccessKey);
+
+            service = (IService)Factory.CreateInstance(data.ServiceName);
+            response = service.Request(data);
+
+            if (response.Status == Status.OK)
+            {
+                if (response.DataSet != null && response.DataSet.DataTables != null && response.DataSet.DataTables.Count > 0 && response.DataSet.DataTables[0].DataRows.Count > 0)
+                    foreach (Data.DataRow dataRow in response.DataSet.DataTables[0].DataRows)
+                    {
+                        string TOKEN_STR = dataRow.String("TOKEN_STR") ?? throw new Exception("TOKEN_STR is null");
+
+                        AuthorizeTokenList.Add(TOKEN_STR,
+                            new AuthorizeToken(TOKEN_STR
+                            , dataRow.Decimal("PROJECT_ID") ?? throw new Exception("PROJECT_ID is null")
+                            , dataRow.Decimal("SERVICE_ID") ?? throw new Exception("SERVICE_ID is null")
+                            , dataRow.DateTime("EXPIRY_DATETIME") ?? throw new Exception("EXPIRY_DATETIME is null")
+                            , dataRow.String("USER_KEY")
+                            , dataRow.String("IP")));
+                    }
+            }
+        }
+        private static void LoadTokenFile()
         {
             try
             {
@@ -27,59 +87,46 @@ namespace MetaFrm.ApiServer.Auth
                 AuthorizeTokenList = new();
             }
         }
-        /// <summary>
-        /// CreateToken
-        /// </summary>
-        /// <param name="projectID"></param>
-        /// <param name="serviceID"></param>
-        /// <param name="userKey"></param>
-        /// <returns></returns>
-        public static AuthorizeToken CreateToken(decimal projectID, decimal serviceID, string? userKey)
+        private static void SaveTokenDB(AuthorizeToken authorizeToken)
         {
-            return AddAuthorizeTokenList(new AuthorizeToken(projectID, serviceID, userKey), projectID, serviceID);
-        }
-        /// <summary>
-        /// CreateToken
-        /// </summary>
-        /// <param name="projectID"></param>
-        /// <param name="serviceID"></param>
-        /// <param name="expiryTimeSpan"></param>
-        /// <param name="userKey"></param>
-        /// <returns></returns>
-        public static AuthorizeToken CreateToken(decimal projectID, decimal serviceID, TimeSpan expiryTimeSpan, string? userKey)
-        {
-            return AddAuthorizeTokenList(new AuthorizeToken(projectID, serviceID, expiryTimeSpan, userKey), projectID, serviceID);
-        }
-        private static AuthorizeToken AddAuthorizeTokenList(AuthorizeToken token, decimal projectID, decimal serviceID)
-        {
-            if (AuthorizeTokenList != null && token.Token != null)
+            IService service;
+            Response response;
+
+            if (Instance == null) return;
+
+            ServiceData data = new();
+            data["1"].CommandText = Instance.GetAttribute("Save");
+            data["1"].AddParameter("TOKEN_STR", DbType.NVarChar, 100, authorizeToken.Token);
+            data["1"].AddParameter("EXPIRY_DATETIME", DbType.DateTime, 0, authorizeToken.ExpiryDateTime);
+            data["1"].AddParameter("PROJECT_ID", DbType.Decimal, 18, authorizeToken.ProjectServiceBase.ProjectID);
+            data["1"].AddParameter("SERVICE_ID", DbType.Decimal, 18, authorizeToken.ProjectServiceBase.ServiceID);
+            data["1"].AddParameter("USER_KEY", DbType.NVarChar, 100, authorizeToken.UserKey);
+            data["1"].AddParameter("IP", DbType.NVarChar, 100, authorizeToken.IP);
+
+            service = (IService)Factory.CreateInstance(data.ServiceName);
+            response = service.Request(data);
+
+            if (response.Status != Status.OK)
             {
-                lock (lockObject)
-                {
-                    //var projectServiceBase = AuthorizeTokenList.Where(x => x.Value.ProjectServiceBase.ProjectID == projectID && x.Value.ProjectServiceBase.ServiceID == serviceID);
-
-                    //if (projectServiceBase != null && projectServiceBase.Any())
-                    //    projectServiceBase.FirstOrDefault().Value.ExpiryDateTime = DateTime.UtcNow;
-
-                    AuthorizeTokenList.Add(token.Token, token);
-                }
+                Console.WriteLine(response.Message);
+                SaveTokenFile();
             }
-
-            if (AuthorizeTokenList != null)
-                lock (lockObject)
-                {
-                    try
-                    {
-                        Factory.SaveInstance(AuthorizeTokenExpiredListDelete(new(AuthorizeTokenList)), path);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-            return token;
         }
-        private static Dictionary<string, AuthorizeToken> AuthorizeTokenExpiredListDelete(Dictionary<string, AuthorizeToken> authorizeToken)
+        private static void SaveTokenFile()
+        {
+            try
+            {
+                Task.Run(delegate
+                {
+                    Factory.SaveInstance(DeleteToken(new(AuthorizeTokenList)), path);
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        private static Dictionary<string, AuthorizeToken> DeleteToken(Dictionary<string, AuthorizeToken> authorizeToken)
         {
             List<string> delete = new();
 
@@ -93,9 +140,106 @@ namespace MetaFrm.ApiServer.Auth
             return authorizeToken;
         }
 
+        internal static bool IsToken(string token)
+        {
+            if (!AuthorizeTokenList.ContainsKey(token) || AuthorizeTokenList[token].IsExpired)
+                switch (Type)
+                {
+                    case "DB":
+                        return IsTokenDB(token);
+                    case "FILE":
+                        return false;
+                }
+
+            return true;
+        }
+        private static bool IsTokenDB(string token)
+        {
+            IService service;
+            Response response;
+
+            if (Instance == null) return false;
+
+            ServiceData data = new();
+            data["1"].CommandText = Instance.GetAttribute("SelectCheck");
+            data["1"].AddParameter("TOKEN_STR", DbType.NVarChar, 100, token);
+
+            service = (IService)Factory.CreateInstance(data.ServiceName);
+            response = service.Request(data);
+
+            if (response.Status == Status.OK)
+            {
+                if (response.DataSet != null && response.DataSet.DataTables != null && response.DataSet.DataTables.Count > 0 && response.DataSet.DataTables[0].DataRows.Count > 0)
+                    foreach (Data.DataRow dataRow in response.DataSet.DataTables[0].DataRows)
+                    {
+                        string TOKEN_STR = dataRow.String("TOKEN_STR") ?? throw new Exception("TOKEN_STR is null");
+
+                        AuthorizeTokenList.Add(TOKEN_STR,
+                            new AuthorizeToken(TOKEN_STR
+                            , dataRow.Decimal("PROJECT_ID") ?? throw new Exception("PROJECT_ID is null")
+                            , dataRow.Decimal("SERVICE_ID") ?? throw new Exception("SERVICE_ID is null")
+                            , dataRow.DateTime("EXPIRY_DATETIME") ?? throw new Exception("EXPIRY_DATETIME is null")
+                            , dataRow.String("USER_KEY")
+                            , dataRow.String("IP")));
+
+                        return true;
+                    }
+            }
+
+            return false;
+        }
+
         /// <summary>
-        /// Authorize class 생성자
+        /// CreateToken
         /// </summary>
-        public Authorize() : base(typeof(AuthorizeFilter)) { }
+        /// <param name="projectID"></param>
+        /// <param name="serviceID"></param>
+        /// <param name="userKey"></param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public static AuthorizeToken CreateToken(decimal projectID, decimal serviceID, string? userKey, string? ip)
+        {
+            return AddAuthorizeTokenList(new AuthorizeToken(projectID, serviceID, userKey, ip));
+        }
+        /// <summary>
+        /// CreateToken
+        /// </summary>
+        /// <param name="projectID"></param>
+        /// <param name="serviceID"></param>
+        /// <param name="expiryTimeSpan"></param>
+        /// <param name="userKey"></param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public static AuthorizeToken CreateToken(decimal projectID, decimal serviceID, TimeSpan expiryTimeSpan, string? userKey, string? ip)
+        {
+            return AddAuthorizeTokenList(new AuthorizeToken(projectID, serviceID, expiryTimeSpan, userKey, ip));
+        }
+        private static AuthorizeToken AddAuthorizeTokenList(AuthorizeToken authorizeToken)
+        {
+            if (AuthorizeTokenList != null && authorizeToken.Token != null)
+            {
+                lock (lockObject)
+                {
+                    //var projectServiceBase = AuthorizeTokenList.Where(x => x.Value.ProjectServiceBase.ProjectID == projectID && x.Value.ProjectServiceBase.ServiceID == serviceID);
+
+                    //if (projectServiceBase != null && projectServiceBase.Any())
+                    //    projectServiceBase.FirstOrDefault().Value.ExpiryDateTime = DateTime.UtcNow;
+
+                    AuthorizeTokenList.Add(authorizeToken.Token, authorizeToken);
+
+                    if (Type == "DB")
+                        Task.Run(delegate
+                        {
+                            SaveTokenDB(authorizeToken);
+                        });
+                }
+            }
+
+            if (Type == "FILE" && AuthorizeTokenList != null)
+                lock (lockObject)
+                    SaveTokenFile();
+
+            return authorizeToken;
+        }
     }
 }

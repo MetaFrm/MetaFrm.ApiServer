@@ -1,26 +1,13 @@
-using MetaFrm;
-using MetaFrm.ApiServer.Auth;
+using MetaFrm.Extensions;
 using MetaFrm.Maui.Devices;
-
-try
-{
-    IConfigurationBuilder builder1 = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-    IConfigurationRoot configuration = builder1.Build();
-
-    Factory.Init(GetValue(configuration, "MetaFrm.Factory.BaseAddress") ?? "", GetValue(configuration, "MetaFrm.Factory.AccessKey") ?? "", DevicePlatform.Server);
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddFactory(new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true), DevicePlatform.Server);
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.DefaultIgnoreCondition =
@@ -47,27 +34,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-Authorize.LoadToken();//저장된 토큰 불러오기
-
 app.Run();
-
-
-static string? GetValue(IConfigurationRoot configuration, string Path)
-{
-    IConfigurationSection? configurationSection;
-    string[] vs;
-
-    configurationSection = null;
-    vs = Path.Split('.');
-
-    foreach (string v in vs)
-        if (configurationSection == null)
-            configurationSection = configuration.GetSection(v);
-        else
-            configurationSection = configurationSection.GetSection(v);
-
-    if (configurationSection == null)
-        return "";
-    else
-        return configurationSection.Value;
-}

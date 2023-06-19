@@ -91,7 +91,7 @@ namespace MetaFrm.ApiServer.Controllers
                                         keyValuePairs.Add($"{name}.{dataColumn.FieldName}", value);
                                 }
 
-                        keyValuePairs.Add("Token", Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, null).GetToken ?? "");
+                        keyValuePairs.Add("Token", Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, $"USP_LOGIN {email}", this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken ?? "");
                     }
 
                     return new UserInfo()
