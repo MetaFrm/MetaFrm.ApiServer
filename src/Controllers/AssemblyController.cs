@@ -11,6 +11,7 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class AssemblyController : ControllerBase, ICore
     {
+        static readonly object lockObject = new();
         private readonly ILogger<AssemblyController> _logger;
 
         /// <summary>
@@ -50,16 +51,16 @@ namespace MetaFrm.ApiServer.Controllers
         {
             string key;
             string path;
-            AuthorizeToken authorizeToken;
 
-            authorizeToken = Authorize.AuthorizeTokenList[token];
+            if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken) || authorizeToken == null)
+                return null;
 
             key = string.Format("{0}.{1}.{2}", authorizeToken.ProjectServiceBase.ProjectID, authorizeToken.ProjectServiceBase.ServiceID, fullNamespace);
             path = $"{Factory.FolderPathDat}{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}.dat";
 
-
-            if (AssemblyText.ContainsKey(key))
-                return AssemblyText[key];
+            lock (lockObject)
+                if (AssemblyText.TryGetValue(key, out string? value))
+                    return value;
 
             if (!httpClientException)
                 try
@@ -74,23 +75,33 @@ namespace MetaFrm.ApiServer.Controllers
                         string? assembly;
                         assembly = response.Content.ReadAsStringAsync().Result;
 
-                        if (!assembly.IsNullOrEmpty() && !AssemblyText.ContainsKey(key))
-                        {
-                            AssemblyText.Add(key, assembly);
-                            Factory.SaveString(assembly, path);
-                        }
+                        lock (lockObject)
+                            if (!assembly.IsNullOrEmpty() && !AssemblyText.TryGetValue(key, out string? value))
+                            {
+                                AssemblyText.Add(key, assembly);
+
+                                Task.Run(delegate
+                                {
+                                    Factory.SaveString(assembly, path);
+                                });
+                            }
                     }
                 }
                 catch (HttpRequestException)
                 {
                     httpClientException = true;
-                    AssemblyText.Add(key, Factory.LoadString(path));
+                    lock (lockObject)
+                        AssemblyText.Add(key, Factory.LoadString(path));
                 }
-
-            if (AssemblyText.ContainsKey(key))
-                return AssemblyText[key];
             else
-                return null;
+                lock (lockObject)
+                    AssemblyText.Add(key, Factory.LoadString(path));
+
+            lock (lockObject)
+                if (AssemblyText.TryGetValue(key, out string? value))
+                    return value;
+                else
+                    return null;
         }
     }
 }

@@ -42,7 +42,7 @@ namespace MetaFrm.ApiServer.Controllers
                 if (serviceData.ServiceName == null)
                     throw new MetaFrmException("ServiceName is null.");
 
-                if (!Authorize.AuthorizeTokenList.ContainsKey(token))
+                if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken))
                 {
                     var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 

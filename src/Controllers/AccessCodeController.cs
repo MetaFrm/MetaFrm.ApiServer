@@ -42,7 +42,7 @@ namespace MetaFrm.ApiServer.Controllers
                 TransactionScope = false
             };
 
-            data["1"].CommandText = "[dbo].[USP_ACCESS_CODE]";
+            data["1"].CommandText = this.GetAttribute("AccessCode");
             data["1"].CommandType = System.Data.CommandType.StoredProcedure;
             data["1"].AddParameter("EMAIL", DbType.NVarChar, 100, email);
             data["1"].AddParameter("ACCESS_GROUP", DbType.NVarChar, 10, accessGroup);

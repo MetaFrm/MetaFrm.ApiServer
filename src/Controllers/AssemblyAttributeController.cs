@@ -12,6 +12,7 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class AssemblyAttributeController : ControllerBase, ICore
     {
+        static readonly object lockObject = new();
         private readonly ILogger<AssemblyAttributeController> _logger;
 
         /// <summary>
@@ -51,15 +52,16 @@ namespace MetaFrm.ApiServer.Controllers
         {
             string key;
             string path;
-            AuthorizeToken authorizeToken;
 
-            authorizeToken = Authorize.AuthorizeTokenList[token];
+            if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken) || authorizeToken == null)
+                return null;
 
             key = string.Format("{0}.{1}.{2}", authorizeToken.ProjectServiceBase.ProjectID, authorizeToken.ProjectServiceBase.ServiceID, fullNamespace);
             path = $"{Factory.FolderPathDat}{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}_A.dat";
 
-            if (AssemblyAttributes.ContainsKey(key))
-                return AssemblyAttributes[key];
+            lock (lockObject)
+                if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
+                    return value;
 
             if (!httpClientException)
                 try
@@ -74,25 +76,33 @@ namespace MetaFrm.ApiServer.Controllers
                         AssemblyAttribute? assemblyAttribute;
                         assemblyAttribute = response.Content.ReadFromJsonAsync<AssemblyAttribute>().Result;
 
-                        if (assemblyAttribute != null && !AssemblyAttributes.ContainsKey(key))
-                        {
-                            AssemblyAttributes.Add(key, assemblyAttribute);
-                            Factory.SaveInstance(assemblyAttribute, path);
-                        }
+                        lock (lockObject)
+                            if (assemblyAttribute != null && !AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
+                            {
+                                AssemblyAttributes.Add(key, assemblyAttribute);
+
+                                Task.Run(delegate
+                                {
+                                    Factory.SaveInstance(assemblyAttribute, path);
+                                });
+                            }
                     }
                 }
                 catch (HttpRequestException)
                 {
                     httpClientException = true;
-                    AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
+                    lock (lockObject)
+                        AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
                 }
             else
-                AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
+                lock (lockObject)
+                    AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
 
-            if (AssemblyAttributes.ContainsKey(key))
-                return AssemblyAttributes[key];
-            else
-                return null;
+            lock (lockObject)
+                if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
+                    return value;
+                else
+                    return null;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class ProjectServiceController : ControllerBase, ICore
     {
+        static readonly object lockObject = new();
         private readonly ILogger<ProjectServiceController> _logger;
 
         /// <summary>
@@ -55,11 +56,13 @@ namespace MetaFrm.ApiServer.Controllers
             if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
                 throw new MetaFrmException("AccessKey error.");
 
-            key = string.Format("{0}.{1}", projectServiceBase.ProjectID, projectServiceBase.ServiceID);
+            key = $"{projectServiceBase.ProjectID}.{projectServiceBase.ServiceID}";
             path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_A_PS.dat";
 
-            if (ProjectServices.ContainsKey(key))
-                return ProjectServices[key];
+
+            lock (lockObject)
+                if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
+                    return projectService;
 
             if (!httpClientException)
                 try
@@ -76,26 +79,41 @@ namespace MetaFrm.ApiServer.Controllers
                         ProjectService? projectService;
                         projectService = response.Content.ReadFromJsonAsync<ProjectService>().Result;
 
-                        if (projectService != null && !ProjectServices.ContainsKey(key))
+                        if (projectService != null)
                         {
-                            projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
-                            ProjectServices.Add(key, projectService);
-                            Factory.SaveInstance(projectService, path);
+                            lock (lockObject)
+                                if (!ProjectServices.TryGetValue(key, out ProjectService? projectService1))
+                                {
+                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
+                                    ProjectServices.Add(key, projectService);
+
+                                    Task.Run(delegate
+                                    {
+                                        Factory.SaveInstance(projectService, path);
+                                    });
+                                }
+                                else
+                                    projectService = projectService1;
+
+                            return projectService;
                         }
                     }
                 }
                 catch (HttpRequestException)
                 {
                     httpClientException = true;
-                    ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
+                    lock (lockObject)
+                        ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
                 }
             else
-                ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
+                lock (lockObject)
+                    ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
 
-            if (ProjectServices.ContainsKey(key))
-                return ProjectServices[key];
-            else
-                return null;
+            lock (lockObject)
+                if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
+                    return projectService;
+                else
+                    return null;
         }
     }
 }
