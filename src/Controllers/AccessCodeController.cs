@@ -32,7 +32,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <returns></returns>
         [HttpGet(Name = "GetAccessCode")]
         [Authorize]
-        public string? Get([FromHeader] string token, [FromHeader] string accessGroup, string email)
+        public IActionResult? Get([FromHeader] string token, [FromHeader] string accessGroup, string email)
         {
             IService service;
             Response response;
@@ -50,7 +50,7 @@ namespace MetaFrm.ApiServer.Controllers
             try
             {
                 if (data.ServiceName == null)
-                    throw new MetaFrmException("ServiceName is null.");
+                    return this.BadRequest("ServiceName is null.");
 
                 service = (IService)Factory.CreateInstance(data.ServiceName);
                 response = service.Request(data);
@@ -60,9 +60,9 @@ namespace MetaFrm.ApiServer.Controllers
                     _logger.LogError(0, "[{Now}] {Message} Email:{email}, AccessGroup:{accessGroup}", DateTime.Now, response.Message, email, accessGroup);
 
                     if (response.Message != null)
-                        throw new MetaFrmException(response.Message);
+                        return this.BadRequest(response.Message);
                     else
-                        throw new MetaFrmException("Access Code generation failed.");
+                        return this.BadRequest("Access Code generation failed.");
                 }
                 else
                 {
@@ -71,15 +71,15 @@ namespace MetaFrm.ApiServer.Controllers
                         string? accessCode = response.DataSet.DataTables[0].DataRows[0].String("ACCESS_CODE");
 
                         if (accessCode != null)
-                            return accessCode.AesEncryptToBase64String(token, "MetaFrm");
+                            return Ok(accessCode.AesEncryptToBase64String(token, "MetaFrm"));
 
-                        throw new MetaFrmException("Access Code generation failed.");
+                        return this.BadRequest("Access Code generation failed.");
                     }
                     else
                     {
                         _logger.LogError(0, "[{Now}] There are no projects or services. Email:{email}, AccessGroup:{accessGroup}", DateTime.Now, email, accessGroup);
 
-                        throw new MetaFrmException("Access Code generation failed.");
+                        return this.BadRequest("Access Code generation failed.");
                     }
                 }
             }
@@ -87,7 +87,7 @@ namespace MetaFrm.ApiServer.Controllers
             {
                 _logger.LogError(0, "[{Now}] Service execute exception. Exception:{exception}", DateTime.Now, exception);
 
-                throw new MetaFrmException(exception);
+                return this.BadRequest(exception);
             }
         }
     }

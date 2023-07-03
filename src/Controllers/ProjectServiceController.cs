@@ -46,7 +46,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="accessKey"></param>
         /// <returns></returns>
         [HttpGet(Name = "GetProjectService")]
-        public ProjectService? Get([FromHeader] string accessKey)
+        public IActionResult? Get([FromHeader] string accessKey)
         {
             string key;
             string path;
@@ -54,7 +54,7 @@ namespace MetaFrm.ApiServer.Controllers
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
             if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
-                throw new MetaFrmException("AccessKey error.");
+                return this.Unauthorized("AccessKey error.");
 
             key = $"{projectServiceBase.ProjectID}.{projectServiceBase.ServiceID}";
             path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_A_PS.dat";
@@ -62,7 +62,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             lock (lockObject)
                 if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
-                    return projectService;
+                    return Ok(projectService);
 
             if (!httpClientException)
                 try
@@ -84,7 +84,7 @@ namespace MetaFrm.ApiServer.Controllers
                             lock (lockObject)
                                 if (!ProjectServices.TryGetValue(key, out ProjectService? projectService1))
                                 {
-                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
+                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
                                     ProjectServices.Add(key, projectService);
 
                                     Task.Run(delegate
@@ -95,7 +95,7 @@ namespace MetaFrm.ApiServer.Controllers
                                 else
                                     projectService = projectService1;
 
-                            return projectService;
+                            return Ok(projectService);
                         }
                     }
                 }
@@ -111,9 +111,9 @@ namespace MetaFrm.ApiServer.Controllers
 
             lock (lockObject)
                 if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
-                    return projectService;
+                    return Ok(projectService);
                 else
-                    return null;
+                    return Ok(null);
         }
     }
 }

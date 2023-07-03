@@ -31,7 +31,7 @@ namespace MetaFrm.ApiServer.Auth
             switch (context.HttpContext.Request.Path.Value)
             {
                 case "/api/AccessCode":
-                    if (Authorize.IsToken(token))
+                    if (Authorize.IsToken(token, "LOGIN"))
                         return;
 
                     var accessGroup = context.HttpContext.Request.Headers["accessGroup"];
@@ -41,22 +41,30 @@ namespace MetaFrm.ApiServer.Auth
                         var projectServiceBase1 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
                         if (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectID)
-                            throw new MetaFrmException("Token error.");
+                            context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                     }
                     return;
 
                 case "/api/Service":
-                    if (Authorize.IsToken(token))
+                    if (Authorize.IsToken(token, "LOGIN"))
                         return;
 
-                    var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
+                    try
+                    {
+                        var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                    if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectID))
-                        throw new MetaFrmException("Token error.");
+                        if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectID))
+                            context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                    }
+                    catch (Exception)
+                    {
+                        context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                    }
+
                     return;
             }
 
-            if (!Authorize.IsToken(token))
+            if (!Authorize.IsToken(token, "PROJECT_SERVICE"))
                 context.Result = new UnauthorizedObjectResult("Authorization failed.");//인증 오류
 
             //var hasClaim = context.HttpContext.User.Claims.Any(c => c.Type == _claim.Type && c.Value == _claim.Value);

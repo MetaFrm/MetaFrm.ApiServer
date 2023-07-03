@@ -65,6 +65,11 @@ namespace MetaFrm.ApiServer.Auth
         public ProjectServiceBase ProjectServiceBase { get; set; }
 
         /// <summary>
+        /// TokenType
+        /// </summary>
+        public string? TokenType { get; set; }
+
+        /// <summary>
         /// AuthorizeToken
         /// </summary>
         public AuthorizeToken()
@@ -76,21 +81,25 @@ namespace MetaFrm.ApiServer.Auth
         /// <summary>
         /// AuthorizeToken
         /// </summary>
+        /// <param name="tokenType"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(string? userKey, string? ip) : this()
+        public AuthorizeToken(string tokenType, string? userKey, string? ip) : this()
         {
+            this.TokenType = tokenType; 
             this.UserKey = userKey;
             this.IP = ip;
         }
         /// <summary>
         /// AuthorizeToken
         /// </summary>
+        /// <param name="tokenType"></param>
         /// <param name="token"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(string token, string? userKey, string? ip)
+        public AuthorizeToken(string tokenType, string token, string? userKey, string? ip)
         {
+            this.TokenType = tokenType;
             this.ExpiryTimeSpan = TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays"));
             this.ProjectServiceBase = new();
             this.Token = token;
@@ -103,9 +112,10 @@ namespace MetaFrm.ApiServer.Auth
         /// </summary>
         /// <param name="projectID"></param>
         /// <param name="serviceID"></param>
+        /// <param name="tokenType"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(decimal projectID, decimal serviceID, string? userKey, string? ip) : this(userKey, ip)
+        public AuthorizeToken(decimal projectID, decimal serviceID, string tokenType, string? userKey, string? ip) : this(tokenType, userKey, ip)
         {
             this.ProjectServiceBase.ProjectID = projectID;
             this.ProjectServiceBase.ServiceID = serviceID;
@@ -116,9 +126,10 @@ namespace MetaFrm.ApiServer.Auth
         /// <param name="token"></param>
         /// <param name="projectID"></param>
         /// <param name="serviceID"></param>
+        /// <param name="tokenType"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(string token, decimal projectID, decimal serviceID, string? userKey, string? ip) : this(token, userKey, ip)
+        public AuthorizeToken(string token, decimal projectID, decimal serviceID, string tokenType, string? userKey, string? ip) : this(tokenType, token, userKey, ip)
         {
             this.ProjectServiceBase.ProjectID = projectID;
             this.ProjectServiceBase.ServiceID = serviceID;
@@ -129,10 +140,11 @@ namespace MetaFrm.ApiServer.Auth
         /// </summary>
         /// <param name="projectID"></param>
         /// <param name="serviceID"></param>
+        /// <param name="tokenType"></param>
         /// <param name="expiryTimeSpan"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(decimal projectID, decimal serviceID, TimeSpan expiryTimeSpan, string? userKey, string? ip) : this(projectID, serviceID, userKey, ip)
+        public AuthorizeToken(decimal projectID, decimal serviceID, string tokenType, TimeSpan expiryTimeSpan, string? userKey, string? ip) : this(projectID, serviceID, tokenType, userKey, ip)
         {
             this.ExpiryTimeSpan = expiryTimeSpan;
         }
@@ -142,10 +154,11 @@ namespace MetaFrm.ApiServer.Auth
         /// <param name="token"></param>
         /// <param name="projectID"></param>
         /// <param name="serviceID"></param>
+        /// <param name="tokenType"></param>
         /// <param name="expiryDateTime"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(string token, decimal projectID, decimal serviceID, DateTime expiryDateTime, string? userKey, string? ip) : this(token, projectID, serviceID, userKey, ip)
+        public AuthorizeToken(string token, decimal projectID, decimal serviceID, string tokenType, DateTime expiryDateTime, string? userKey, string? ip) : this(token, projectID, serviceID, tokenType, userKey, ip)
         {
             this.ExpiryDateTime = expiryDateTime;
         }

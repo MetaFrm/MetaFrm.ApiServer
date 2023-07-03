@@ -40,21 +40,21 @@ namespace MetaFrm.ApiServer.Controllers
             try
             {
                 if (serviceData.ServiceName == null)
-                    throw new MetaFrmException("ServiceName is null.");
+                    return this.BadRequest("ServiceName is null.");
 
                 if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken))
                 {
                     var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
                     if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
-                        throw new MetaFrmException("Token error.");
+                        return this.Unauthorized("Token error.");
 
                     if (serviceData.Commands.Count != 1)
-                        return this.Unauthorized();
+                        return this.BadRequest("No command.");
 
                     foreach (var command in serviceData.Commands)
                         if (!notAuthorizeCommandText.Contains(command.Value.CommandText))
-                            return this.Unauthorized();
+                            return this.BadRequest("No CommandText.");
                 }
 
                 service = (IService)Factory.CreateInstance(serviceData.ServiceName);
