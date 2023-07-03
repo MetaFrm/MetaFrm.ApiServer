@@ -12,9 +12,8 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class ProjectServiceController : ControllerBase, ICore
     {
-        private static readonly object lockObject = new();
+        static readonly object lockObject = new();
         private readonly ILogger<ProjectServiceController> _logger;
-        private readonly int? MainProject = null;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
@@ -30,16 +29,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="logger"></param>
         public ProjectServiceController(ILogger<ProjectServiceController> logger)
         {
-            string? tmp;
-
             _logger = logger;
-
-            tmp = this.GetAttribute("MainProject");
-
-            if (tmp.IsNullOrEmpty())
-                MainProject = null;
-            else
-                MainProject = tmp.ToInt();
 
             // Update port # in the following line.
             this.httpClient = new()
@@ -63,10 +53,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null)
-                return this.Unauthorized("AccessKey error.");
-
-            if (MainProject == null && projectServiceBase.ProjectID != Factory.ProjectID)
+            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
                 return this.Unauthorized("AccessKey error.");
 
             key = $"{projectServiceBase.ProjectID}.{projectServiceBase.ServiceID}";

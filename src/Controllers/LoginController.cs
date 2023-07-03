@@ -15,7 +15,6 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly int? MainProject = null;
 
         /// <summary>
         /// AssemblyController
@@ -23,16 +22,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="logger"></param>
         public LoginController(ILogger<LoginController> logger)
         {
-            string? tmp;
-
             _logger = logger;
-
-            tmp = this.GetAttribute("MainProject");
-
-            if (tmp.IsNullOrEmpty())
-                MainProject = null;
-            else
-                MainProject = tmp.ToInt();
         }
 
         /// <summary>
@@ -50,10 +40,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null)
-                return this.Unauthorized("Token error.");
-
-            if (MainProject == null && projectServiceBase.ProjectID != Factory.ProjectID)
+            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
                 return this.Unauthorized("Token error.");
 
             ServiceData data = new()
@@ -68,14 +55,6 @@ namespace MetaFrm.ApiServer.Controllers
             data["1"].CommandType = System.Data.CommandType.StoredProcedure;
             data["1"].AddParameter("EMAIL", DbType.NVarChar, 100, email);
             data["1"].AddParameter("ACCESS_NUMBER", DbType.NVarChar, 4000, password);
-
-            if (projectServiceBase.ProjectID != Factory.ProjectID && MainProject != null)
-            {
-                data["MetaFrm.Database.Adapter"].CommandText = this.GetAttribute("MetaFrm.Database.Adapter.Attribute");
-                data["MetaFrm.Database.Adapter"].AddParameter("PROJECT_ID", Database.DbType.Decimal, 18, projectServiceBase.ProjectID);
-                data["MetaFrm.Database.Adapter"].AddParameter("SERVICE_ID", Database.DbType.Decimal, 18, projectServiceBase.ServiceID);
-                data["MetaFrm.Database.Adapter"].AddParameter("NAMESPACE", Database.DbType.NVarChar, 6000, this.GetAttribute("MetaFrm.Database.Adapter"));
-            }
 
             service = (IService)Factory.CreateInstance(data.ServiceName);
             response = service.Request(data);
