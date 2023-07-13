@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "MetaFrm.ApiServer_net6._0_": {
+    "MetaFrm.ApiServer_net7._0_": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
