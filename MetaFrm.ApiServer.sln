@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers"
 		src\Controllers\LoginController.cs = src\Controllers\LoginController.cs
 		src\Controllers\ProjectServiceController.cs = src\Controllers\ProjectServiceController.cs
 		src\Controllers\ServiceController.cs = src\Controllers\ServiceController.cs
+		src\Controllers\TranslationDictionaryController.cs = src\Controllers\TranslationDictionaryController.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{60806BEC-8D59-4CA0-85FC-EDF23E262230}"
