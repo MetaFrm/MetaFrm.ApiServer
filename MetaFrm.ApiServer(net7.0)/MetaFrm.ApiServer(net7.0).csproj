@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -16,6 +16,7 @@
     <PackageProjectUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</RepositoryUrl>
     <PackageTags>meta;framework;dotnet;maui;</PackageTags>
+    <IsPackable>true</IsPackable>
 	
 	<SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss:fffZ"))</SourceRevisionId>
 	
@@ -29,7 +30,14 @@
 (Multi platform &amp; Meta management)</Description>
 	
 	<PackageIcon>icon.png</PackageIcon>
+	
+	<OutputType>Library</OutputType>
   </PropertyGroup>
+	
+  <ItemGroup>
+    <ProjectCapability Include="AspNetCore" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="dat\**" />
@@ -53,7 +61,6 @@
     <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
     <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
     <Compile Include="..\src\Controllers\TranslationDictionaryController.cs" Link="Controllers\TranslationDictionaryController.cs" />
-    <Compile Include="..\src\Program.cs" Link="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>

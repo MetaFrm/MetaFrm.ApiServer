@@ -2,6 +2,7 @@
 using MetaFrm.ApiServer.Auth;
 using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace MetaFrm.ApiServer.Controllers
 {

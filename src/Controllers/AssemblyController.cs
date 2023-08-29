@@ -1,5 +1,6 @@
 ﻿using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 
 namespace MetaFrm.ApiServer.Controllers
