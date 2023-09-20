@@ -6,10 +6,11 @@ namespace MetaFrm.ApiServer.RabbitMQ
     internal class RabbitMQProducer : ICore, IDisposable
     {
         private static RabbitMQProducer? _producer;
+        private static RabbitMQConsumer? _consumer;
         private IConnection? _connection;
         private IModel? _model;
-        internal string? ConnectionString { get; private set; }
-        internal string? QueueName { get; private set; }
+        internal string? ConnectionString { get; set; }
+        internal string? QueueName { get; set; }
 
         private RabbitMQProducer()
         {
@@ -23,11 +24,18 @@ namespace MetaFrm.ApiServer.RabbitMQ
             this.ConnectionString = this.GetAttribute("ConnectionString");
             this.QueueName = this.GetAttribute("QueueName");
 
-            _ = RabbitMQConsumer.Instance;
+            if(_consumer == null)
+            {
+                _consumer = RabbitMQConsumer.Instance;
+                _consumer.ConnectionString = this.ConnectionString;
+                _consumer.QueueName = this.QueueName;
+                _consumer.Init();
+            }
 
-            var factory = new ConnectionFactory();
-            factory.Uri = new(this.ConnectionString);
-            this._connection = factory.CreateConnection();
+            this._connection = new ConnectionFactory
+            {
+                Uri = new(this.ConnectionString)
+            }.CreateConnection();
 
             this._model = _connection.CreateModel();
             this._model.QueueDeclare(queue: this.QueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);

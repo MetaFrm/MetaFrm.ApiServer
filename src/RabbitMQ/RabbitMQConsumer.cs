@@ -12,8 +12,8 @@ namespace MetaFrm.ApiServer.RabbitMQ
         private static RabbitMQConsumer? _consumer;
         private IConnection? _connection;
         private IModel? _model;
-        internal string? ConnectionString { get; private set; }
-        internal string? QueueName { get; private set; }
+        internal string? ConnectionString { get; set; }
+        internal string? QueueName { get; set; }
 
         private readonly string Login;
 
@@ -22,20 +22,19 @@ namespace MetaFrm.ApiServer.RabbitMQ
             _consumer = this;
 
             this.Login = this.GetAttribute("Login");
-
-            this.Init();
         }
 
-        private void Init()
+        internal void Init()
         {
             this.Close();
 
-            this.ConnectionString = RabbitMQProducer.Instance.ConnectionString ?? "";
-            this.QueueName = RabbitMQProducer.Instance.QueueName;
+            if (this.ConnectionString.IsNullOrEmpty())
+                return;
 
-            var factory = new ConnectionFactory();
-            factory.Uri = new(this.ConnectionString);
-            this._connection = factory.CreateConnection();
+            this._connection = new ConnectionFactory
+            {
+                Uri = new(this.ConnectionString)
+            }.CreateConnection();
 
             this._model = _connection.CreateModel();
             this._model.QueueDeclare(queue: this.QueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
