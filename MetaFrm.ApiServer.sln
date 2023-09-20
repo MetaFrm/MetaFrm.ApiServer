@@ -45,6 +45,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFrm.ApiServer(net7.0)", "MetaFrm.ApiServer(net7.0)\MetaFrm.ApiServer(net7.0).csproj", "{152C2F07-9F3F-41B2-8555-ECAA830C6DE0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RabbitMQ", "RabbitMQ", "{78528EEC-044E-4E9B-B478-A2A8F607296B}"
+	ProjectSection(SolutionItems) = preProject
+		src\RabbitMQ\RabbitMQConsumer.cs = src\RabbitMQ\RabbitMQConsumer.cs
+		src\RabbitMQ\RabbitMQData.cs = src\RabbitMQ\RabbitMQData.cs
+		src\RabbitMQ\RabbitMQProducer.cs = src\RabbitMQ\RabbitMQProducer.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +74,7 @@ Global
 		{CCD9FD40-A0CE-4836-A674-9EF4D4D21600} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 		{60806BEC-8D59-4CA0-85FC-EDF23E262230} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 		{DB869435-5F91-4CE2-981F-3EFC20A4A64A} = {4B9E71C4-F9DE-445A-8C8B-CB1DF2D40778}
+		{78528EEC-044E-4E9B-B478-A2A8F607296B} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BE3F2316-703F-4F14-91A0-F0E141FAA7CC}

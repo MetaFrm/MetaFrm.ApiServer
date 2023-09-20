@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>MetaFrm.ApiServer.net6.0</PackageId>
-    <Version>6.0.0.66</Version>
+    <Version>6.0.0.67</Version>
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2023. dsun all rights reserved.</Copyright>
@@ -49,6 +49,9 @@
     <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
     <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
     <Compile Include="..\src\Controllers\TranslationDictionaryController.cs" Link="Controllers\TranslationDictionaryController.cs" />
+    <Compile Include="..\src\RabbitMQ\RabbitMQConsumer.cs" Link="RabbitMQ\RabbitMQConsumer.cs" />
+    <Compile Include="..\src\RabbitMQ\RabbitMQData.cs" Link="RabbitMQ\RabbitMQData.cs" />
+    <Compile Include="..\src\RabbitMQ\RabbitMQProducer.cs" Link="RabbitMQ\RabbitMQProducer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
@@ -56,14 +59,12 @@
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
     <PackageReference Include="MetaFrm.Core.net6.0" Version="6.0.0.65" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.9" />
     <PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.12" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Auth\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="icon.png">

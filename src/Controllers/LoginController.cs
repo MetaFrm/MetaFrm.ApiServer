@@ -1,5 +1,6 @@
 ﻿using MetaFrm.Api.Models;
 using MetaFrm.ApiServer.Auth;
+using MetaFrm.ApiServer.RabbitMQ;
 using MetaFrm.Database;
 using MetaFrm.Extensions;
 using MetaFrm.Service;
@@ -16,6 +17,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly bool PushNotification;
 
         /// <summary>
         /// AssemblyController
@@ -24,6 +26,7 @@ namespace MetaFrm.ApiServer.Controllers
         public LoginController(ILogger<LoginController> logger)
         {
             _logger = logger;
+            this.PushNotification = this.GetAttribute("PushNotification") == "Y";
         }
 
         /// <summary>
@@ -34,7 +37,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="password"></param>
         /// <returns></returns>
         [HttpPost(Name = "GetLogin")]
-        public IActionResult? Get([FromHeader] string token, string email, string password)
+        public IActionResult Get([FromHeader] string token, string email, string password)
         {
             IService service;
             Response response;
@@ -52,13 +55,19 @@ namespace MetaFrm.ApiServer.Controllers
             password = password.AesDecryptorToBase64String(email, token);
             email = email.AesDecryptorToBase64String(token, "MetaFrm");
 
-            data["1"].CommandText = "[dbo].[USP_LOGIN]";
+            data["1"].CommandText = this.GetAttribute("Login");
             data["1"].CommandType = System.Data.CommandType.StoredProcedure;
             data["1"].AddParameter("EMAIL", DbType.NVarChar, 100, email);
             data["1"].AddParameter("ACCESS_NUMBER", DbType.NVarChar, 4000, password);
 
             service = (IService)Factory.CreateInstance(data.ServiceName);
             response = service.Request(data);
+
+            if (this.PushNotification)
+                Task.Run(() =>
+                {
+                    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
+                });
 
             if (response.Status != Status.OK)
             {
