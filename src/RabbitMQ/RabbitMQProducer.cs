@@ -6,7 +6,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
     internal class RabbitMQProducer : ICore, IDisposable
     {
         private static RabbitMQProducer? _producer;
-        private static RabbitMQConsumer? _consumer;
+        private static Thread? _consumerThread;
         private IConnection? _connection;
         private IModel? _model;
         internal string? ConnectionString { get; set; }
@@ -24,12 +24,10 @@ namespace MetaFrm.ApiServer.RabbitMQ
             this.ConnectionString = this.GetAttribute("ConnectionString");
             this.QueueName = this.GetAttribute("QueueName");
 
-            if(_consumer == null)
+            if (_consumerThread == null)
             {
-                _consumer = RabbitMQConsumer.Instance;
-                _consumer.ConnectionString = this.ConnectionString;
-                _consumer.QueueName = this.QueueName;
-                _consumer.Init();
+                _consumerThread = new Thread(new ThreadStart(RunConsumer));
+                _consumerThread.Start();
             }
 
             this._connection = new ConnectionFactory
@@ -69,6 +67,18 @@ namespace MetaFrm.ApiServer.RabbitMQ
                 return;
 
             _model.BasicPublish(string.Empty, this.QueueName, null, Encoding.UTF8.GetBytes(json));
+        }
+
+        private void RunConsumer()
+        {
+            RabbitMQConsumer? _consumer;
+            _consumer = RabbitMQConsumer.Instance;
+            _consumer.ConnectionString = this.ConnectionString;
+            _consumer.QueueName = this.QueueName;
+            _consumer.Init();
+
+            while (true)
+                Thread.Sleep(1000);
         }
     }
 }
