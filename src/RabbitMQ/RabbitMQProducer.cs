@@ -27,6 +27,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
             if (_consumerThread == null)
             {
                 _consumerThread = new Thread(new ThreadStart(RunConsumer));
+                _consumerThread.IsBackground = true;
                 _consumerThread.Start();
             }
 
