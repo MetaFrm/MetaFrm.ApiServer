@@ -4,7 +4,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using static Google.Apis.Requests.BatchRequest;
 
 namespace MetaFrm.ApiServer.RabbitMQ
 {
