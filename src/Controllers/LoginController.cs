@@ -17,7 +17,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly bool PushNotification;
+        private readonly bool IsPushNotification;
 
         /// <summary>
         /// AssemblyController
@@ -26,7 +26,7 @@ namespace MetaFrm.ApiServer.Controllers
         public LoginController(ILogger<LoginController> logger)
         {
             _logger = logger;
-            this.PushNotification = this.GetAttribute("PushNotification") == "Y";
+            this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
         }
 
         /// <summary>
@@ -63,8 +63,7 @@ namespace MetaFrm.ApiServer.Controllers
             service = (IService)Factory.CreateInstance(data.ServiceName);
             response = service.Request(data);
 
-            if (this.PushNotification)
-                //RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
+            if (this.IsPushNotification)
                 Task.Run(() =>
                 {
                     RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));

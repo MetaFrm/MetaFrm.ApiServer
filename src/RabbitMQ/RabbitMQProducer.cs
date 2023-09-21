@@ -61,6 +61,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
             this.Close();
         }
 
+        //https://dotnetblog.asphostportal.com/how-to-make-sure-your-asp-net-core-keep-running-on-iis/
         public void BasicPublish(string json)
         {
             if (_model == null)

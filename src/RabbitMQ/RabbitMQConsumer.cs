@@ -16,12 +16,14 @@ namespace MetaFrm.ApiServer.RabbitMQ
         internal string? QueueName { get; set; }
 
         private readonly string Login;
+        private readonly string AccessCode;
 
         private RabbitMQConsumer()
         {
             _consumer = this;
 
-            this.Login = this.GetAttribute("Login");
+            this.Login = this.GetAttribute(nameof(this.Login));
+            this.AccessCode = this.GetAttribute(nameof(this.AccessCode));
         }
 
         internal void Init()
@@ -66,7 +68,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
                     {
                         string? email = myObject.ServiceData.Commands[key].Values[i]["EMAIL"].StringValue;
 
-                        this.PushNotification("Login"
+                        this.PushNotification(nameof(this.Login)
                             , email
                             , $"Login {(myObject.Response.Status == Status.OK ? "OK" : "Fail")}"
                             , $"{(myObject.Response.Status == Status.OK ? email : myObject.Response.Message)}"
@@ -74,11 +76,16 @@ namespace MetaFrm.ApiServer.RabbitMQ
                             , myObject.Response.Status
                             , null);
                     }
-
+                    else if (myObject.ServiceData.Commands[key].CommandText == this.AccessCode)//AccessCode
+                    {
+                        this.SandEmail(nameof(this.AccessCode)
+                            , myObject.ServiceData.Commands[key].Values[i]["SUBJECT"].StringValue
+                            , myObject.ServiceData.Commands[key].Values[i]["BODY"].StringValue
+                            , myObject.ServiceData.Commands[key].Values[i]["EMAIL"].StringValue);
+                    }
                 }
             }
         }
-
 
         private void PushNotification(string ACTION, string? EMAIL, string Title, string? Body, DateTime dateTime, Status status, Dictionary<string, string>? data)
         {
@@ -129,7 +136,42 @@ namespace MetaFrm.ApiServer.RabbitMQ
             serviceData["1"].CommandText = this.GetAttribute("SearchToken");
             serviceData["1"].CommandType = System.Data.CommandType.StoredProcedure;
             serviceData["1"].AddParameter("TOKEN_TYPE", DbType.NVarChar, 50, "Firebase.FCM");
-            serviceData["1"].AddParameter(nameof(ACTION), DbType.NVarChar, 100, ACTION);
+            serviceData["1"].AddParameter(nameof(ACTION), DbType.NVarChar, 50, ACTION);
+            serviceData["1"].AddParameter(nameof(EMAIL), DbType.NVarChar, 100, EMAIL);
+
+            service = (IService)Factory.CreateInstance(serviceData.ServiceName);
+            response = service.Request(serviceData);
+
+            if (response.Status == Status.OK)
+            {
+                if (response.DataSet != null && response.DataSet.DataTables.Count > 0)
+                {
+                    Console.WriteLine("Get FirebaseFCM Token Completed !!");
+                    return response.DataSet.DataTables[0];
+                }
+            }
+            else
+            {
+                if (response.Message != null)
+                    throw new Exception(response.Message);
+            }
+
+            throw new Exception("Get FirebaseFCM Token  Fail !!");
+        }
+        private Data.DataTable? SandEmail(string ACTION, string? SUBJECT, string? BODY, string? EMAIL)
+        {
+            IService service;
+            Response response;
+
+            ServiceData serviceData = new()
+            {
+                TransactionScope = false,
+            };
+            serviceData["1"].CommandText = this.GetAttribute("SandEmail");
+            serviceData["1"].CommandType = System.Data.CommandType.StoredProcedure;
+            serviceData["1"].AddParameter(nameof(ACTION), DbType.NVarChar, 50, ACTION);
+            serviceData["1"].AddParameter(nameof(SUBJECT), DbType.NVarChar, 4000, SUBJECT);
+            serviceData["1"].AddParameter(nameof(BODY), DbType.NVarChar, 4000, BODY);
             serviceData["1"].AddParameter(nameof(EMAIL), DbType.NVarChar, 100, EMAIL);
 
             service = (IService)Factory.CreateInstance(serviceData.ServiceName);
