@@ -67,7 +67,7 @@ namespace MetaFrm.ApiServer.Controllers
                     if (this.RabbitMQProducerCommandText.Contains(command.Value.CommandText))
                         Task.Run(() =>
                         {
-                            RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = serviceData, Response = response }));
+                            RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
                         });
             }
             catch (Exception exception)

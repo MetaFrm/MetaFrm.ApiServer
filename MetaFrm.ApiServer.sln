@@ -48,7 +48,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RabbitMQ", "RabbitMQ", "{78528EEC-044E-4E9B-B478-A2A8F607296B}"
 	ProjectSection(SolutionItems) = preProject
 		src\RabbitMQ\RabbitMQConsumer.cs = src\RabbitMQ\RabbitMQConsumer.cs
-		src\RabbitMQ\RabbitMQData.cs = src\RabbitMQ\RabbitMQData.cs
 		src\RabbitMQ\RabbitMQProducer.cs = src\RabbitMQ\RabbitMQProducer.cs
 	EndProjectSection
 EndProject

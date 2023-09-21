@@ -15,6 +15,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
         private RabbitMQProducer()
         {
             _producer = this;
+            this.Init();
         }
 
         private void Init()
@@ -64,8 +65,6 @@ namespace MetaFrm.ApiServer.RabbitMQ
         //https://dotnetblog.asphostportal.com/how-to-make-sure-your-asp-net-core-keep-running-on-iis/
         public void BasicPublish(string json)
         {
-            if (_model == null)
-                this.Init();
             if (_model == null)
                 return;
 

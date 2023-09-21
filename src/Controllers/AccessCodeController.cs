@@ -57,7 +57,7 @@ namespace MetaFrm.ApiServer.Controllers
             if (this.IsEmail)
                 Task.Run(() =>
                 {
-                    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
+                    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
                 });
 
             if (response.Status != Status.OK)
