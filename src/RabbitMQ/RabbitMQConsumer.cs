@@ -70,6 +70,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
                             , email
                             , $"Login {(myObject.Response.Status == Status.OK ? "OK" : "Fail")}"
                             , $"{(myObject.Response.Status == Status.OK ? email : myObject.Response.Message)}"
+                            , myObject.DateTime
                             , myObject.Response.Status
                             , null);
                     }
@@ -79,7 +80,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
         }
 
 
-        private void PushNotification(string ACTION, string? EMAIL, string Title, string? Body, Status status, Dictionary<string, string>? data)
+        private void PushNotification(string ACTION, string? EMAIL, string Title, string? Body, DateTime dateTime, Status status, Dictionary<string, string>? data)
         {
             IService service;
             Data.DataTable? dataTable;
@@ -106,7 +107,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
             {
                 serviceData["1"].NewRow();
                 serviceData["1"].SetValue("Token", item.String("TOKEN_STR"));
-                serviceData["1"].SetValue(nameof(Title), $"{Title} {DateTime.Now:dd HH:mm:ss}");
+                serviceData["1"].SetValue(nameof(Title), $"{Title} {dateTime:dd HH:mm:ss}");
                 serviceData["1"].SetValue(nameof(Body), $"{Body}");
                 serviceData["1"].SetValue("ImageUrl", status == Status.OK ? "Complete" : "Fail");
                 serviceData["1"].SetValue("Data", data != null ? JsonSerializer.Serialize(data) : null);

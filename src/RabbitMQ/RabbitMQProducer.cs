@@ -6,7 +6,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
     internal class RabbitMQProducer : ICore, IDisposable
     {
         private static RabbitMQProducer? _producer;
-        private static Thread? _consumerThread;
+        private static RabbitMQConsumer? _consumer;
         private IConnection? _connection;
         private IModel? _model;
         internal string? ConnectionString { get; set; }
@@ -15,21 +15,22 @@ namespace MetaFrm.ApiServer.RabbitMQ
         private RabbitMQProducer()
         {
             _producer = this;
+
+            this.ConnectionString = this.GetAttribute("ConnectionString");
+            this.QueueName = this.GetAttribute("QueueName");
+
+            if (_consumer == null)
+            {
+                _consumer = RabbitMQConsumer.Instance;
+                _consumer.ConnectionString = this.ConnectionString;
+                _consumer.QueueName = this.QueueName;
+                _consumer.Init();
+            }
         }
 
         private void Init()
         {
             this.Close();
-
-            this.ConnectionString = this.GetAttribute("ConnectionString");
-            this.QueueName = this.GetAttribute("QueueName");
-
-            if (_consumerThread == null)
-            {
-                _consumerThread = new Thread(new ThreadStart(RunConsumer));
-                _consumerThread.IsBackground = true;
-                _consumerThread.Start();
-            }
 
             this._connection = new ConnectionFactory
             {
@@ -68,18 +69,6 @@ namespace MetaFrm.ApiServer.RabbitMQ
                 return;
 
             _model.BasicPublish(string.Empty, this.QueueName, null, Encoding.UTF8.GetBytes(json));
-        }
-
-        private void RunConsumer()
-        {
-            RabbitMQConsumer? _consumer;
-            _consumer = RabbitMQConsumer.Instance;
-            _consumer.ConnectionString = this.ConnectionString;
-            _consumer.QueueName = this.QueueName;
-            _consumer.Init();
-
-            while (true)
-                Thread.Sleep(1000);
         }
     }
 }

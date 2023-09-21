@@ -12,6 +12,13 @@ namespace MetaFrm.ApiServer.RabbitMQ
     public class RabbitMQData
     {
         /// <summary>
+        /// DateTime
+        /// </summary>
+        [DataMember()]
+        [JsonInclude]
+        public DateTime DateTime { get; set; } = DateTime.Now;
+
+        /// <summary>
         /// ServiceData
         /// </summary>
         [DataMember()]
