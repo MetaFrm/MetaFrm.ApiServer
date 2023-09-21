@@ -64,11 +64,11 @@ namespace MetaFrm.ApiServer.Controllers
             response = service.Request(data);
 
             if (this.PushNotification)
-                RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
-                //Task.Run(() =>
-                //{
-                //    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
-                //});
+                //RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
+                Task.Run(() =>
+                {
+                    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = data, Response = response }));
+                });
 
             if (response.Status != Status.OK)
             {

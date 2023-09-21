@@ -15,22 +15,22 @@ namespace MetaFrm.ApiServer.RabbitMQ
         private RabbitMQProducer()
         {
             _producer = this;
+        }
+
+        private void Init()
+        {
+            this.Close();
 
             this.ConnectionString = this.GetAttribute("ConnectionString");
             this.QueueName = this.GetAttribute("QueueName");
 
-            if (_consumer == null)
+            if(_consumer == null)
             {
                 _consumer = RabbitMQConsumer.Instance;
                 _consumer.ConnectionString = this.ConnectionString;
                 _consumer.QueueName = this.QueueName;
                 _consumer.Init();
             }
-        }
-
-        private void Init()
-        {
-            this.Close();
 
             this._connection = new ConnectionFactory
             {
