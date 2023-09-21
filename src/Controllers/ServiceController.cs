@@ -1,5 +1,6 @@
 ﻿using MetaFrm.Api.Models;
 using MetaFrm.ApiServer.Auth;
+using MetaFrm.ApiServer.RabbitMQ;
 using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,8 @@ namespace MetaFrm.ApiServer.Controllers
     public class ServiceController : ControllerBase, ICore
     {
         private readonly ILogger<ServiceController> _logger;
-        private readonly string[] notAuthorizeCommandText = (Factory.ProjectService.GetAttributeValue("NotAuthorizeCommandText") ?? "").Split(',');//new string[] { "[dbo].[USP_JOIN]", "[dbo].[USP_MENU_RESPONSIBILITY_SEL_DEFAULT]", "[dbo].[USP_MENU_RESPONSIBILITY_ASSEMBLY_SEL_DEFAULT]", "[dbo].[USP_PASSWORD_RESET]" };
+        private readonly string[] NotAuthorizeCommandText = (Factory.ProjectService.GetAttributeValue(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
+        private readonly string[] RabbitMQProducerCommandText = (Factory.ProjectService.GetAttributeValue(nameof(RabbitMQProducerCommandText)) ?? "").Split(',');
 
         /// <summary>
         /// ServiceController
@@ -54,12 +56,19 @@ namespace MetaFrm.ApiServer.Controllers
                         return this.BadRequest("No command.");
 
                     foreach (var command in serviceData.Commands)
-                        if (!notAuthorizeCommandText.Contains(command.Value.CommandText))
+                        if (!this.NotAuthorizeCommandText.Contains(command.Value.CommandText))
                             return this.BadRequest("No CommandText.");
                 }
 
                 service = (IService)Factory.CreateInstance(serviceData.ServiceName);
                 response = service.Request(serviceData);
+
+                foreach (var command in serviceData.Commands)
+                    if (this.RabbitMQProducerCommandText.Contains(command.Value.CommandText))
+                        Task.Run(() =>
+                        {
+                            RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new RabbitMQData { ServiceData = serviceData, Response = response }));
+                        });
             }
             catch (Exception exception)
             {

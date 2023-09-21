@@ -17,6 +17,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
 
         private readonly string Login;
         private readonly string AccessCode;
+        private readonly string Join;
 
         private RabbitMQConsumer()
         {
@@ -24,6 +25,7 @@ namespace MetaFrm.ApiServer.RabbitMQ
 
             this.Login = this.GetAttribute(nameof(this.Login));
             this.AccessCode = this.GetAttribute(nameof(this.AccessCode));
+            this.Join = this.GetAttribute(nameof(this.Join));
         }
 
         internal void Init()
@@ -76,12 +78,21 @@ namespace MetaFrm.ApiServer.RabbitMQ
                             , myObject.Response.Status
                             , null);
                     }
-                    else if (myObject.ServiceData.Commands[key].CommandText == this.AccessCode)//AccessCode
+                    else if (myObject.ServiceData.Commands[key].CommandText == this.AccessCode
+                        && myObject.Response.Status == Status.OK && myObject.Response.DataSet != null && myObject.Response.DataSet.DataTables.Count > 0 && myObject.Response.DataSet.DataTables[0].DataRows.Count > 0)//AccessCode
                     {
                         this.SandEmail(nameof(this.AccessCode)
-                            , myObject.ServiceData.Commands[key].Values[i]["SUBJECT"].StringValue
-                            , myObject.ServiceData.Commands[key].Values[i]["BODY"].StringValue
-                            , myObject.ServiceData.Commands[key].Values[i]["EMAIL"].StringValue);
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("SUBJECT")
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("BODY")
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("EMAIL"));
+                    }
+                    else if (myObject.ServiceData.Commands[key].CommandText == this.Join
+                        && myObject.Response.Status == Status.OK && myObject.Response.DataSet != null && myObject.Response.DataSet.DataTables.Count > 0 && myObject.Response.DataSet.DataTables[0].DataRows.Count > 0)//Join
+                    {
+                        this.SandEmail(nameof(this.AccessCode)
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("SUBJECT")
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("BODY")
+                            , myObject.Response.DataSet.DataTables[0].DataRows[0].String("EMAIL"));
                     }
                 }
             }
