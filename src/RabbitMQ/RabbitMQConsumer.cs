@@ -15,17 +15,9 @@ namespace MetaFrm.ApiServer.RabbitMQ
         internal string? ConnectionString { get; set; }
         internal string? QueueName { get; set; }
 
-        private readonly string Login;
-        private readonly string AccessCode;
-        private readonly string Join;
-
         private RabbitMQConsumer()
         {
             _consumer = this;
-
-            this.Login = this.GetAttribute(nameof(this.Login));
-            this.AccessCode = this.GetAttribute(nameof(this.AccessCode));
-            this.Join = this.GetAttribute(nameof(this.Join));
         }
 
         internal void Init()
