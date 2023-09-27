@@ -11,9 +11,7 @@ env:
   DLL_ID: ${{secrets.DLL_ID_6}} # NET버전
   UPLOAD_MODURE: "Y"
   PUSH_NUGET: "N"
-  PASSWORD: "${{github.event.pusher.email}}^${{env.PASSWORD}}"
-  NOTIFICATION_START: '"${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{env.PASSWORD}}" "notification"'
-  NOTIFICATION_END : '"${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"'
+  PASSWORD: '"${{github.event.pusher.email}}^${{env.PASSWORD}}"'
 
 jobs:
   build6:
@@ -24,6 +22,8 @@ jobs:
       METAFRM_UPLOADMODULE_URL: "https://download.metafrm.net/github/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
       METAFRM_UPLOADMODULE_ZIP: "temp/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
       METAFRM_UPLOADMODULE_FILE: "temp/MetaFrameworkManagementSystemUploadModule.dll"
+      NOTIFICATION_START: '"${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{env.PASSWORD}}" "notification"'
+      NOTIFICATION_END : '"${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"'
 
     steps:
     - uses: actions/checkout@v3
