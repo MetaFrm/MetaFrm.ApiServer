@@ -11,7 +11,7 @@ env:
   DLL_ID: ${{secrets.DLL_ID_7}} # NET¹öÀü
   UPLOAD_MODURE: "Y"
   PUSH_NUGET: "N"
-  PASSWORD: '"${{github.event.pusher.email}}^${{env.PASSWORD}}"'
+  PASSWORD: '"${{github.event.pusher.email}}^${{secrets.PASSWORD}}"'
 
 jobs:
   build7:
