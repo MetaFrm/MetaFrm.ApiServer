@@ -22,8 +22,8 @@ jobs:
   build6:
     runs-on: ubuntu-latest
     env:
-      NOTIFICATION_START: '"${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{env.PASSWORD}}" "notification"'
-      NOTIFICATION_END : '"${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"'
+      NOTIFICATION_START: '"$METAFRM_UPLOADMODULE_FILE" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "$PASSWORD" "notification"'
+      NOTIFICATION_END : '"$DLL_PATH" "${{vars.NAMESPACE}}"'
 
     steps:
     - uses: actions/checkout@v3
