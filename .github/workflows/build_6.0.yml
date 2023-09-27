@@ -11,7 +11,7 @@ env:
   DLL_ID: ${{secrets.DLL_ID_6}} # NET¹öÀü
   UPLOAD_MODURE: "Y"
   PUSH_NUGET: "N"
-  PASSWORD: "${{github.event.pusher.email}}^${{env.PASSWORD}}"
+  PASSWORD: "\"${{github.event.pusher.email}}^${{env.PASSWORD}}\""
   NOTIFICATION_START: "\"${{env.METAFRM_UPLOADMODULE_FILE}}\" \"${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}\" \"${{env.PASSWORD}}\" \"notification\""
   NOTIFICATION_END : "\"${{env.DLL_PATH}}\" \"${{vars.NAMESPACE}}\""
 
