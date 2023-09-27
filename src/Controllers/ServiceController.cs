@@ -37,14 +37,10 @@ namespace MetaFrm.ApiServer.Controllers
         [Authorize]
         public IActionResult Get([FromHeader] string token, ServiceData serviceData)
         {
-            IService service;
             Response response;
 
             try
             {
-                if (serviceData.ServiceName == null)
-                    return this.BadRequest("ServiceName is null.");
-
                 if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken))
                 {
                     var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
@@ -60,15 +56,21 @@ namespace MetaFrm.ApiServer.Controllers
                             return this.BadRequest("No CommandText.");
                 }
 
-                service = (IService)Factory.CreateInstance(serviceData.ServiceName);
-                response = service.Request(serviceData);
+                if (!serviceData.ServiceName.IsNullOrEmpty())
+                    response = ((IService)Factory.CreateInstance(serviceData.ServiceName)).Request(serviceData);
+                else
+                    response = new();
 
                 foreach (var command in serviceData.Commands)
                     if (this.RabbitMQProducerCommandText.Contains(command.Value.CommandText))
+                    {
                         Task.Run(() =>
                         {
                             RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
                         });
+
+                        response.Status = Status.OK;
+                    }
             }
             catch (Exception exception)
             {
