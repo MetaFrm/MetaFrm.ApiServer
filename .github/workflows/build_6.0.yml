@@ -11,19 +11,19 @@ env:
   DLL_ID: ${{secrets.DLL_ID_6}} # NET버전
   UPLOAD_MODURE: "Y"
   PUSH_NUGET: "N"
-  PASSWORD: '"${{github.event.pusher.email}}^${{secrets.PASSWORD}}"'
-  DLL_PATH: "${{vars.NAMESPACE}}(net6.0)/bin/Release/net6.0/${{vars.NAMESPACE}}.dll" # NET버전
-  PROJECT_PATH: "${{vars.NAMESPACE}}(net6.0)" # NET버전
-  METAFRM_UPLOADMODULE_URL: "https://download.metafrm.net/github/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
-  METAFRM_UPLOADMODULE_ZIP: "temp/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
-  METAFRM_UPLOADMODULE_FILE: "temp/MetaFrameworkManagementSystemUploadModule.dll"
+  PASSWORD: "${{github.event.pusher.email}}^${{env.PASSWORD}}"
+  NOTIFICATION_START: "\"${{env.METAFRM_UPLOADMODULE_FILE}}\" \"${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}\" \"${{env.PASSWORD}}\" \"notification\""
+  NOTIFICATION_END : "\"${{env.DLL_PATH}}\" \"${{vars.NAMESPACE}}\""
 
 jobs:
   build6:
     runs-on: ubuntu-latest
     env:
-      NOTIFICATION_START: '"$METAFRM_UPLOADMODULE_FILE" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "$PASSWORD" "notification"'
-      NOTIFICATION_END : '"$DLL_PATH" "${{vars.NAMESPACE}}"'
+      DLL_PATH: "${{vars.NAMESPACE}}(net6.0)/bin/Release/net6.0/${{vars.NAMESPACE}}.dll" # NET버전
+      PROJECT_PATH: "${{vars.NAMESPACE}}(net6.0)" # NET버전
+      METAFRM_UPLOADMODULE_URL: "https://download.metafrm.net/github/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
+      METAFRM_UPLOADMODULE_ZIP: "temp/MetaFrameworkManagementSystemUploadModule6.0.zip" # NET버전
+      METAFRM_UPLOADMODULE_FILE: "temp/MetaFrameworkManagementSystemUploadModule.dll"
 
     steps:
     - uses: actions/checkout@v3
