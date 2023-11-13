@@ -1,6 +1,5 @@
 ﻿using MetaFrm.Api.Models;
 using MetaFrm.ApiServer.Auth;
-using MetaFrm.ApiServer.RabbitMQ;
 using MetaFrm.Database;
 using MetaFrm.Extensions;
 using MetaFrm.Service;
@@ -27,6 +26,13 @@ namespace MetaFrm.ApiServer.Controllers
         {
             _logger = logger;
             this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
+
+            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
+            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQConsumer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQConsumer");
+            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
+            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
+
+            this.CreateInstance("BrokerConsumer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") });
         }
 
         /// <summary>
@@ -66,7 +72,7 @@ namespace MetaFrm.ApiServer.Controllers
             if (this.IsPushNotification)
                 Task.Run(() =>
                 {
-                    RabbitMQProducer.Instance.BasicPublish(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
+                    ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") }))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
                 });
 
             if (response.Status != Status.OK)
