@@ -15,7 +15,8 @@ namespace MetaFrm.ApiServer.Controllers
     {
         private readonly ILogger<ServiceController> _logger;
         private readonly string[] NotAuthorizeCommandText = (Factory.ProjectService.GetAttributeValue(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
-        private readonly string[] RabbitMQProducerCommandText = (Factory.ProjectService.GetAttributeValue(nameof(RabbitMQProducerCommandText)) ?? "").Split(',');
+        private readonly string[] BrokerProducerCommandText = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandText)) ?? "").Split(',');
+        private readonly string[] BrokerProducerCommandTextParallel = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandTextParallel)) ?? "").Split(',');
 
         /// <summary>
         /// ServiceController
@@ -31,6 +32,13 @@ namespace MetaFrm.ApiServer.Controllers
             //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
             this.CreateInstance("BrokerConsumer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") });
+
+            if (!Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)) && !this.GetAttribute("BrokerQueueNameParallel").IsNullOrEmpty())
+            {
+                ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueNameParallel") });
+                if (serviceString != null)
+                    Factory.RegisterInstance(serviceString, nameof(BrokerProducerCommandTextParallel));
+            }
         }
 
         /// <summary>
@@ -67,16 +75,32 @@ namespace MetaFrm.ApiServer.Controllers
                 else
                     response = new();
 
+                bool isBrokerProducerCommandText = false;
+                bool isBrokerProducerCommandTextParallel = false;
                 foreach (var command in serviceData.Commands)
-                    if (this.RabbitMQProducerCommandText.Contains(command.Value.CommandText))
+                {
+                    if (!isBrokerProducerCommandText && this.BrokerProducerCommandText.Contains(command.Value.CommandText))
                     {
+                        isBrokerProducerCommandText = true;
+
                         Task.Run(() =>
                         {
                             ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") }))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
                         });
-
-                        response.Status = Status.OK;
                     }
+                    if (!isBrokerProducerCommandTextParallel && this.BrokerProducerCommandTextParallel.Contains(command.Value.CommandText))
+                    {
+                        isBrokerProducerCommandTextParallel = true;
+
+                        Task.Run(() =>
+                        {
+                            if (Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)))
+                                ((IServiceString?)Factory.LoadInstance(nameof(BrokerProducerCommandTextParallel)))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
+                        });
+                    }
+                }
+
+                response.Status = Status.OK;
             }
             catch (Exception exception)
             {
