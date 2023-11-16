@@ -35,7 +35,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             if (!Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)) && !this.GetAttribute("BrokerQueueNameParallel").IsNullOrEmpty())
             {
-                ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueNameParallel") });
+                ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, new object[] { this.GetAttribute("BrokerConnectionStringParallel"), this.GetAttribute("BrokerQueueNameParallel") });
                 if (serviceString != null)
                     Factory.RegisterInstance(serviceString, nameof(BrokerProducerCommandTextParallel));
             }
