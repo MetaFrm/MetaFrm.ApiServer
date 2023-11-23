@@ -73,7 +73,12 @@ namespace MetaFrm.ApiServer.Controllers
                 if (!serviceData.ServiceName.IsNullOrEmpty())
                     response = ((IService)Factory.CreateInstance(serviceData.ServiceName)).Request(serviceData);
                 else
-                    response = new();
+                {
+                    response = new()
+                    {
+                        Status = Status.OK
+                    };
+                }
 
                 bool isBrokerProducerCommandText = false;
                 bool isBrokerProducerCommandTextParallel = false;
@@ -99,8 +104,6 @@ namespace MetaFrm.ApiServer.Controllers
                         });
                     }
                 }
-
-                response.Status = Status.OK;
             }
             catch (Exception exception)
             {
