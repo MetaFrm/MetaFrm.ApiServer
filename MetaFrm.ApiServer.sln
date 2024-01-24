@@ -41,9 +41,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build_6.0.yml = .github\workflows\build_6.0.yml
 		.github\workflows\build_7.0.yml = .github\workflows\build_7.0.yml
+		.github\workflows\build_8.0.yml = .github\workflows\build_8.0.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFrm.ApiServer(net7.0)", "MetaFrm.ApiServer(net7.0)\MetaFrm.ApiServer(net7.0).csproj", "{152C2F07-9F3F-41B2-8555-ECAA830C6DE0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFrm.ApiServer(net8.0)", "MetaFrm.ApiServer(net8.0)\MetaFrm.ApiServer(net8.0).csproj", "{22E590BC-E008-4268-8436-55A4D02498CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +62,10 @@ Global
 		{152C2F07-9F3F-41B2-8555-ECAA830C6DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{152C2F07-9F3F-41B2-8555-ECAA830C6DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{152C2F07-9F3F-41B2-8555-ECAA830C6DE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22E590BC-E008-4268-8436-55A4D02498CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22E590BC-E008-4268-8436-55A4D02498CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22E590BC-E008-4268-8436-55A4D02498CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22E590BC-E008-4268-8436-55A4D02498CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
