@@ -17,8 +17,8 @@ jobs:
     env:
       DLL_PATH: "${{vars.NAMESPACE}}(net8.0)/bin/Release/net8.0/${{vars.NAMESPACE}}.dll" # NET버전
       PROJECT_PATH: "${{vars.NAMESPACE}}(net8.0)" # NET버전
-      METAFRM_UPLOADMODULE_URL: "https://download.metafrm.net/github/MetaFrameworkManagementSystemUploadModule7.0.zip" # NET버전
-      METAFRM_UPLOADMODULE_ZIP: "temp/MetaFrameworkManagementSystemUploadModule7.0.zip" # NET버전
+      METAFRM_UPLOADMODULE_URL: "https://download.metafrm.net/github/MetaFrameworkManagementSystemUploadModule8.0.zip" # NET버전
+      METAFRM_UPLOADMODULE_ZIP: "temp/MetaFrameworkManagementSystemUploadModule8.0.zip" # NET버전
       METAFRM_UPLOADMODULE_FILE: "temp/MetaFrameworkManagementSystemUploadModule.dll"
 
     steps:
