@@ -128,5 +128,5 @@ jobs:
       run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "Push to NuGet Fail !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
       
 
-    # - name: Completed
-    #   run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "CI/CD Completed !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
+    - name: Completed
+      run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "CI/CD Completed !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
