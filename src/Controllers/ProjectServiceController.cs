@@ -64,7 +64,10 @@ namespace MetaFrm.ApiServer.Controllers
 
             lock (lockObject)
                 if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
+                {
+                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
                     return Ok(projectService);
+                }
 
             if (!httpClientException)
                 try
@@ -95,7 +98,10 @@ namespace MetaFrm.ApiServer.Controllers
                                     });
                                 }
                                 else
+                                {
                                     projectService = projectService1;
+                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
+                                }
 
                             return Ok(projectService);
                         }
