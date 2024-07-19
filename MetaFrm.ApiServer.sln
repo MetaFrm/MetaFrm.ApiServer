@@ -7,6 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFrm.ApiServer(net6.0)",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6FB37B83-4A79-4C77-AE0E-30B5245FBF91}"
 	ProjectSection(SolutionItems) = preProject
+		src\Extensions.cs = src\Extensions.cs
 		src\Program.cs = src\Program.cs
 	EndProjectSection
 EndProject
