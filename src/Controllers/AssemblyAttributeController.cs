@@ -92,7 +92,22 @@ namespace MetaFrm.ApiServer.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Factory.SaveInstance(ex, $"{path}e");
+                    StreamWriter? streamWriter = null;
+
+                    try
+                    {
+                        //Factory.SaveInstance(ex, $"{path}e");
+
+                        streamWriter = System.IO.File.CreateText($"{path}e");
+                        streamWriter.Write(ex.ToString());
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    finally
+                    {
+                        streamWriter?.Close();
+                    }
 
                     httpClientException = true;
                     lock (lockObject)
