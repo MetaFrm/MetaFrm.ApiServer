@@ -90,8 +90,10 @@ namespace MetaFrm.ApiServer.Controllers
                             }
                     }
                 }
-                catch (HttpRequestException)
+                catch (Exception ex)
                 {
+                    Factory.SaveInstance(ex, $"{path}e");
+
                     httpClientException = true;
                     lock (lockObject)
                         AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
