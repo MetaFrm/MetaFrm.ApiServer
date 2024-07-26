@@ -14,16 +14,9 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class ProjectServiceController : ControllerBase, ICore
     {
-        static readonly object lockObject = new();
         private readonly ILogger<ProjectServiceController> _logger;
 
-        /// <summary>
-        /// 키와 값의 컬렉션을 나타냅니다.
-        /// </summary>
-        private static Dictionary<string, ProjectService> ProjectServices { get; set; } = new Dictionary<string, ProjectService>();
-
         private readonly HttpClient httpClient;
-        private static bool httpClientException;
 
         /// <summary>
         /// ProjectServiceController
@@ -50,7 +43,6 @@ namespace MetaFrm.ApiServer.Controllers
         [HttpGet(Name = "GetProjectService")]
         public IActionResult? Get([FromHeader] string accessKey)
         {
-            string key;
             string path;
 
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
@@ -58,70 +50,51 @@ namespace MetaFrm.ApiServer.Controllers
             if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
                 return this.Unauthorized("AccessKey error.");
 
-            key = $"{projectServiceBase.ProjectID}.{projectServiceBase.ServiceID}";
-            path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_A_PS.dat";
+            path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_{DateTime.Now:dd HH:mm:ss}_A_PS.dat";
 
+            try
+            {
+                //this.httpClient.DefaultRequestHeaders.Clear();
+                this.httpClient.DefaultRequestHeaders.Add("AccessKey", accessKey);
 
-            lock (lockObject)
-                if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
+                HttpResponseMessage response = httpClient.GetAsync($"api/ProjectService").Result;
+
+                response.EnsureSuccessStatusCode();
+
+                if (response.IsSuccessStatusCode)
                 {
-                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
-                    return Ok(projectService);
-                }
+                    ProjectService? projectService;
+                    projectService = response.Content.ReadFromJsonAsync<ProjectService>().Result;
 
-            if (!httpClientException)
-                try
-                {
-                    //this.httpClient.DefaultRequestHeaders.Clear();
-                    this.httpClient.DefaultRequestHeaders.Add("AccessKey", accessKey);
-
-                    HttpResponseMessage response = httpClient.GetAsync($"api/ProjectService").Result;
-
-                    response.EnsureSuccessStatusCode();
-
-                    if (response.IsSuccessStatusCode)
+                    if (projectService != null)
                     {
-                        ProjectService? projectService;
-                        projectService = response.Content.ReadFromJsonAsync<ProjectService>().Result;
+                        projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
 
-                        if (projectService != null)
-                        {
-                            lock (lockObject)
-                                if (!ProjectServices.TryGetValue(key, out ProjectService? projectService1))
-                                {
-                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
-                                    ProjectServices.Add(key, projectService);
-
-                                    Task.Run(delegate
-                                    {
-                                        Factory.SaveInstance(projectService, path);
-                                    });
-                                }
-                                else
-                                {
-                                    projectService = projectService1;
-                                    projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
-                                }
-
-                            return Ok(projectService);
-                        }
+                        return Ok(projectService);
                     }
                 }
-                catch (HttpRequestException)
-                {
-                    httpClientException = true;
-                    lock (lockObject)
-                        ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
-                }
-            else
-                lock (lockObject)
-                    ProjectServices.Add(key, Factory.LoadInstance<ProjectService>(path));
+            }
+            catch (Exception ex)
+            {
+                StreamWriter? streamWriter = null;
 
-            lock (lockObject)
-                if (ProjectServices.TryGetValue(key, out ProjectService? projectService))
-                    return Ok(projectService);
-                else
-                    return Ok(null);
+                try
+                {
+                    //Factory.SaveInstance(ex, $"{path}e");
+
+                    streamWriter = System.IO.File.CreateText($"{path}e");
+                    streamWriter.Write(ex.ToString());
+                }
+                catch (Exception)
+                {
+                }
+                finally
+                {
+                    streamWriter?.Close();
+                }
+            }
+
+            return Ok(null);
         }
     }
 }
