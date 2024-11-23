@@ -1,7 +1,7 @@
 ﻿using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace MetaFrm.ApiServer.Controllers
@@ -21,24 +21,14 @@ namespace MetaFrm.ApiServer.Controllers
         /// </summary>
         private static Dictionary<string, Response> TranslationDictionary { get; set; } = new Dictionary<string, Response>();
 
-        private readonly HttpClient httpClient;
-        private static bool httpClientException;
-
         /// <summary>
         /// TranslationDictionaryController
         /// </summary>
         /// <param name="logger"></param>
-        public TranslationDictionaryController(ILogger<TranslationDictionaryController> logger)
+        /// <param name="factory"></param>
+        public TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory factory)
         {
             _logger = logger;
-
-            // Update port # in the following line.
-            this.httpClient = new()
-            {
-                BaseAddress = new Uri(Factory.BaseAddress)
-            };
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         }
 
         /// <summary>
@@ -51,56 +41,54 @@ namespace MetaFrm.ApiServer.Controllers
             string key;
             string path;
 
-            key = $"{Factory.ProjectID}.{Factory.ServiceID}";
-            path = $"{Factory.FolderPathDat}{Factory.ProjectID}_{Factory.ServiceID}_TD.dat";
+            key = $"{Factory.ProjectServiceBase.ProjectID}.{Factory.ProjectServiceBase.ServiceID}";
+            path = $"{Factory.FolderPathDat}{Factory.ProjectServiceBase.ProjectID}_{Factory.ProjectServiceBase.ServiceID}_TD.dat";
 
             lock (lockObject)
                 if (TranslationDictionary.TryGetValue(key, out Response? response))
                     return Ok(response);
 
-            if (!httpClientException)
-                try
+            try
+            {
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/TranslationDictionary")
                 {
-                    //this.httpClient.DefaultRequestHeaders.Clear();
-                    this.httpClient.DefaultRequestHeaders.Add("AccessKey", Factory.AccessKey);
+                    Headers = {
+                        { HeaderNames.Accept, "application/json" },
+                        { "AccessKey", Factory.AccessKey },
+                    }
+                };
 
-                    HttpResponseMessage response = httpClient.GetAsync($"api/TranslationDictionary").Result;
+                HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
 
-                    response.EnsureSuccessStatusCode();
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    Response? result;
+                    result = httpResponseMessage.Content.ReadFromJsonAsync<Response>().Result;
 
-                    if (response.IsSuccessStatusCode)
+                    if (result != null)
                     {
-                        Response? result;
-                        result = response.Content.ReadFromJsonAsync<Response>().Result;
+                        lock (lockObject)
+                            if (!TranslationDictionary.TryGetValue(key, out Response? result1))
+                            {
+                                TranslationDictionary.Add(key, result);
 
-                        if (result != null)
-                        {
-                            lock (lockObject)
-                                if (!TranslationDictionary.TryGetValue(key, out Response? result1))
+                                Task.Run(delegate
                                 {
-                                    TranslationDictionary.Add(key, result);
+                                    Factory.SaveInstance(result, path);
+                                });
+                            }
+                            else
+                                result = result1;
 
-                                    Task.Run(delegate
-                                    {
-                                        Factory.SaveInstance(result, path);
-                                    });
-                                }
-                                else
-                                    result = result1;
-
-                            return Ok(result);
-                        }
+                        return Ok(result);
                     }
                 }
-                catch (HttpRequestException)
-                {
-                    httpClientException = true;
-                    lock (lockObject)
-                        TranslationDictionary.Add(key, Factory.LoadInstance<Response>(path));
-                }
-            else
+            }
+            catch (HttpRequestException)
+            {
                 lock (lockObject)
                     TranslationDictionary.Add(key, Factory.LoadInstance<Response>(path));
+            }
 
             lock (lockObject)
                 if (TranslationDictionary.TryGetValue(key, out Response? projectService))

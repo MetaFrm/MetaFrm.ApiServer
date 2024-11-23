@@ -2,7 +2,7 @@
 using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace MetaFrm.ApiServer.Controllers
@@ -22,24 +22,14 @@ namespace MetaFrm.ApiServer.Controllers
         /// </summary>
         private static Dictionary<string, AssemblyAttribute> AssemblyAttributes { get; set; } = new Dictionary<string, AssemblyAttribute>();
 
-        private readonly HttpClient httpClient;
-        private static bool httpClientException;
-
         /// <summary>
         /// AssemblyAttributeController
         /// </summary>
         /// <param name="logger"></param>
-        public AssemblyAttributeController(ILogger<AssemblyAttributeController> logger)
+        /// <param name="factory"></param>
+        public AssemblyAttributeController(ILogger<AssemblyAttributeController> logger, Factory factory)
         {
             _logger = logger;
-
-            // Update port # in the following line.
-            this.httpClient = new()
-            {
-                BaseAddress = new Uri(Factory.BaseAddress)
-            };
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         }
 
         /// <summary>
@@ -65,57 +55,57 @@ namespace MetaFrm.ApiServer.Controllers
                 if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
                     return Ok(value);
 
-            if (!httpClientException)
+            try
+            {
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/AssemblyAttribute?fullNamespace={fullNamespace}")
+                {
+                    Headers = {
+                        { HeaderNames.Accept, "application/json" },
+                        { "token", authorizeToken.UserKey },
+                    }
+                };
+
+                HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
+
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    AssemblyAttribute? assemblyAttribute;
+                    assemblyAttribute = httpResponseMessage.Content.ReadFromJsonAsync<AssemblyAttribute>().Result;
+
+                    lock (lockObject)
+                        if (assemblyAttribute != null && !AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
+                        {
+                            AssemblyAttributes.Add(key, assemblyAttribute);
+
+                            Task.Run(delegate
+                            {
+                                Factory.SaveInstance(assemblyAttribute, path);
+                            });
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                StreamWriter? streamWriter = null;
+
                 try
                 {
-                    this.httpClient.DefaultRequestHeaders.Add("token", authorizeToken.UserKey);
-                    HttpResponseMessage response = httpClient.GetAsync($"api/AssemblyAttribute?fullNamespace={fullNamespace}").Result;
+                    //Factory.SaveInstance(ex, $"{path}e");
 
-                    response.EnsureSuccessStatusCode();
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        AssemblyAttribute? assemblyAttribute;
-                        assemblyAttribute = response.Content.ReadFromJsonAsync<AssemblyAttribute>().Result;
-
-                        lock (lockObject)
-                            if (assemblyAttribute != null && !AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
-                            {
-                                AssemblyAttributes.Add(key, assemblyAttribute);
-
-                                Task.Run(delegate
-                                {
-                                    Factory.SaveInstance(assemblyAttribute, path);
-                                });
-                            }
-                    }
+                    streamWriter = System.IO.File.CreateText($"{path}e");
+                    streamWriter.Write(ex.ToString());
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    StreamWriter? streamWriter = null;
-
-                    try
-                    {
-                        //Factory.SaveInstance(ex, $"{path}e");
-
-                        streamWriter = System.IO.File.CreateText($"{path}e");
-                        streamWriter.Write(ex.ToString());
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    finally
-                    {
-                        streamWriter?.Close();
-                    }
-
-                    httpClientException = true;
-                    lock (lockObject)
-                        AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
                 }
-            else
+                finally
+                {
+                    streamWriter?.Close();
+                }
+
                 lock (lockObject)
                     AssemblyAttributes.Add(key, Factory.LoadInstance<AssemblyAttribute>(path));
+            }
 
             lock (lockObject)
                 if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))

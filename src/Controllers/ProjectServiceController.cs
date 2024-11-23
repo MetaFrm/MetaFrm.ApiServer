@@ -2,7 +2,7 @@
 using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace MetaFrm.ApiServer.Controllers
@@ -16,23 +16,14 @@ namespace MetaFrm.ApiServer.Controllers
     {
         private readonly ILogger<ProjectServiceController> _logger;
 
-        private readonly HttpClient httpClient;
-
         /// <summary>
         /// ProjectServiceController
         /// </summary>
         /// <param name="logger"></param>
-        public ProjectServiceController(ILogger<ProjectServiceController> logger)
+        /// <param name="factory"></param>
+        public ProjectServiceController(ILogger<ProjectServiceController> logger, Factory factory)
         {
             _logger = logger;
-
-            // Update port # in the following line.
-            this.httpClient = new()
-            {
-                BaseAddress = new Uri(Factory.BaseAddress)
-            };
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         }
 
         /// <summary>
@@ -47,24 +38,27 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
+            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                 return this.Unauthorized("AccessKey error.");
 
             path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_{DateTime.Now:dd HH:mm:ss}_A_PS.dat";
 
             try
             {
-                //this.httpClient.DefaultRequestHeaders.Clear();
-                this.httpClient.DefaultRequestHeaders.Add("AccessKey", accessKey);
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/ProjectService")
+                {
+                    Headers = {
+                        { HeaderNames.Accept, "application/json" },
+                        { "AccessKey", accessKey },
+                    }
+                };
 
-                HttpResponseMessage response = httpClient.GetAsync($"api/ProjectService").Result;
+                HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
 
-                response.EnsureSuccessStatusCode();
-
-                if (response.IsSuccessStatusCode)
+                if (httpResponseMessage.IsSuccessStatusCode)
                 {
                     ProjectService? projectService;
-                    projectService = response.Content.ReadFromJsonAsync<ProjectService>().Result;
+                    projectService = httpResponseMessage.Content.ReadFromJsonAsync<ProjectService>().Result;
 
                     if (projectService != null)
                     {

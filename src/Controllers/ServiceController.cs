@@ -22,7 +22,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// ServiceController
         /// </summary>
         /// <param name="logger"></param>
-        public ServiceController(ILogger<ServiceController> logger)
+        /// <param name="factory"></param>
+        public ServiceController(ILogger<ServiceController> logger, Factory factory)
         {
             _logger = logger;
 
@@ -59,7 +60,7 @@ namespace MetaFrm.ApiServer.Controllers
                 {
                     var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                    if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
+                    if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                         return this.Unauthorized("Token error.");
 
                     if (serviceData.Commands.Count != 1)

@@ -1,7 +1,7 @@
 ﻿using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 
 namespace MetaFrm.ApiServer.Controllers
 {
@@ -20,24 +20,14 @@ namespace MetaFrm.ApiServer.Controllers
         /// </summary>
         private static Dictionary<string, string> AssemblyText { get; set; } = new Dictionary<string, string>();
 
-        private readonly HttpClient httpClient;
-        private static bool httpClientException;
-
         /// <summary>
         /// AssemblyController
         /// </summary>
         /// <param name="logger"></param>
-        public AssemblyController(ILogger<AssemblyController> logger)
+        /// <param name="factory"></param>
+        public AssemblyController(ILogger<AssemblyController> logger, Factory factory)
         {
             _logger = logger;
-
-            // Update port # in the following line.
-            this.httpClient = new()
-            {
-                BaseAddress = new Uri(Factory.BaseAddress)
-            };
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         }
 
         /// <summary>
@@ -63,57 +53,57 @@ namespace MetaFrm.ApiServer.Controllers
                 if (AssemblyText.TryGetValue(key, out string? value))
                     return Ok(value);
 
-            if (!httpClientException)
+            try
+            {
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/Assembly?fullNamespace={fullNamespace}")
+                {
+                    Headers = {
+                        { HeaderNames.Accept, "text/plain" },
+                        { "token", authorizeToken.UserKey },
+                    }
+                };
+
+                HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
+
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    string? assembly;
+                    assembly = httpResponseMessage.Content.ReadAsStringAsync().Result;
+
+                    lock (lockObject)
+                        if (!assembly.IsNullOrEmpty() && !AssemblyText.TryGetValue(key, out string? value))
+                        {
+                            AssemblyText.Add(key, assembly);
+
+                            Task.Run(delegate
+                            {
+                                Factory.SaveString(assembly, path);
+                            });
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                StreamWriter? streamWriter = null;
+
                 try
                 {
-                    this.httpClient.DefaultRequestHeaders.Add("token", authorizeToken.UserKey);
-                    HttpResponseMessage response = httpClient.GetAsync($"api/Assembly?fullNamespace={fullNamespace}").Result;
+                    //Factory.SaveInstance(ex, $"{path}e");
 
-                    response.EnsureSuccessStatusCode();
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string? assembly;
-                        assembly = response.Content.ReadAsStringAsync().Result;
-
-                        lock (lockObject)
-                            if (!assembly.IsNullOrEmpty() && !AssemblyText.TryGetValue(key, out string? value))
-                            {
-                                AssemblyText.Add(key, assembly);
-
-                                Task.Run(delegate
-                                {
-                                    Factory.SaveString(assembly, path);
-                                });
-                            }
-                    }
+                    streamWriter = System.IO.File.CreateText($"{path}e");
+                    streamWriter.Write(ex.ToString());
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    StreamWriter? streamWriter = null;
-
-                    try
-                    {
-                        //Factory.SaveInstance(ex, $"{path}e");
-
-                        streamWriter = System.IO.File.CreateText($"{path}e");
-                        streamWriter.Write(ex.ToString());
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    finally
-                    {
-                        streamWriter?.Close();
-                    }
-
-                    httpClientException = true;
-                    lock (lockObject)
-                        AssemblyText.Add(key, Factory.LoadString(path));
                 }
-            else
+                finally
+                {
+                    streamWriter?.Close();
+                }
+
                 lock (lockObject)
                     AssemblyText.Add(key, Factory.LoadString(path));
+            }
 
             lock (lockObject)
                 if (AssemblyText.TryGetValue(key, out string? value))

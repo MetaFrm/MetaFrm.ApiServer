@@ -20,7 +20,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// AccessCodeController
         /// </summary>
         /// <param name="logger"></param>
-        public AccessCodeController(ILogger<AccessCodeController> logger)
+        /// <param name="factory"></param>
+        public AccessCodeController(ILogger<AccessCodeController> logger, Factory factory)
         {
             _logger = logger;
             this.IsEmail = this.GetAttribute(nameof(this.IsEmail)) == "Y";

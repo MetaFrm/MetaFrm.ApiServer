@@ -40,7 +40,7 @@ namespace MetaFrm.ApiServer.Auth
                     {
                         var projectServiceBase1 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                        if (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectID)
+                        if (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectServiceBase.ProjectID)
                             context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                     }
                     return;
@@ -53,7 +53,7 @@ namespace MetaFrm.ApiServer.Auth
                     {
                         var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                        if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectID))
+                        if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectServiceBase.ProjectID))
                             context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                     }
                     catch (Exception)

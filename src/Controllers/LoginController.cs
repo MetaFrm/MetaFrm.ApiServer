@@ -22,7 +22,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// AssemblyController
         /// </summary>
         /// <param name="logger"></param>
-        public LoginController(ILogger<LoginController> logger)
+        /// <param name="factory"></param>
+        public LoginController(ILogger<LoginController> logger, Factory factory)
         {
             _logger = logger;
             this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
@@ -50,7 +51,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectID)
+            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                 return this.Unauthorized("Token error.");
 
             ServiceData data = new()
