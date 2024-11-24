@@ -12,7 +12,7 @@ namespace MetaFrm.ApiServer.Auth
         /// <summary>
         /// AuthorizeFilter class 생성자
         /// </summary>
-        public AuthorizeFilter() { }
+        public AuthorizeFilter(Factory factory) { }
 
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.

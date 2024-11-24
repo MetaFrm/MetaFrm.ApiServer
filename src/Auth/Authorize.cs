@@ -9,6 +9,8 @@ namespace MetaFrm.ApiServer.Auth
     /// </summary>
     public class Authorize : TypeFilterAttribute, ICore
     {
+        static bool IsFirst = true;
+
         static Authorize? Instance;
 
         static string? Type = "FILE";
@@ -26,10 +28,7 @@ namespace MetaFrm.ApiServer.Auth
         {
             lock (lockObject)
                 if (Instance == null)
-                {
                     Instance = this;
-                    LoadToken();
-                }
         }
 
         private static void LoadToken()
@@ -94,6 +93,12 @@ namespace MetaFrm.ApiServer.Auth
         {
             lock (lockObject)
             {
+                if (IsFirst)
+                {
+                    IsFirst = false;
+                    LoadToken();
+                }
+
                 AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken);
 
                 if (authorizeToken == null)
