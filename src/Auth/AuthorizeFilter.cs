@@ -7,12 +7,12 @@ namespace MetaFrm.ApiServer.Auth
     /// <summary>
     /// AuthorizeFilter
     /// </summary>
-    public class AuthorizeFilter : IAuthorizationFilter, ICore
+    /// <remarks>
+    /// AuthorizeFilter class 생성자
+    /// </remarks>
+    public class AuthorizeFilter(Factory factory) : IAuthorizationFilter, ICore
     {
-        /// <summary>
-        /// AuthorizeFilter class 생성자
-        /// </summary>
-        public AuthorizeFilter(Factory factory) { }
+        private readonly Factory _factory = factory;
 
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
@@ -40,7 +40,7 @@ namespace MetaFrm.ApiServer.Auth
                     {
                         var projectServiceBase1 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                        if (projectServiceBase1 == null || projectServiceBase1.ProjectID != Factory.ProjectServiceBase.ProjectID)
+                        if (projectServiceBase1 == null || Factory.ProjectServiceBase == null || projectServiceBase1.ProjectID != Factory.ProjectServiceBase.ProjectID)
                             context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                     }
                     return;
@@ -53,7 +53,7 @@ namespace MetaFrm.ApiServer.Auth
                     {
                         var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                        if ((projectServiceBase2 == null || projectServiceBase2.ProjectID != Factory.ProjectServiceBase.ProjectID))
+                        if ((projectServiceBase2 == null || Factory.ProjectServiceBase == null || projectServiceBase2.ProjectID != Factory.ProjectServiceBase.ProjectID))
                             context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                     }
                     catch (Exception)

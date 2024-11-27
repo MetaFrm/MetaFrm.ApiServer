@@ -14,6 +14,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class ServiceController : ControllerBase, ICore
     {
         private readonly ILogger<ServiceController> _logger;
+        private readonly Factory _factory;
         private readonly string[] NotAuthorizeCommandText = (Factory.ProjectService.GetAttributeValue(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
         private readonly string[] BrokerProducerCommandText = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandText)) ?? "").Split(',');
         private readonly string[] BrokerProducerCommandTextParallel = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandTextParallel)) ?? "").Split(',');
@@ -26,17 +27,18 @@ namespace MetaFrm.ApiServer.Controllers
         public ServiceController(ILogger<ServiceController> logger, Factory factory)
         {
             _logger = logger;
+            _factory = factory;
 
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
             //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQConsumer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQConsumer");
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
             //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
-            this.CreateInstance("BrokerConsumer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") });
+            this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
 
             if (!Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)) && !this.GetAttribute("BrokerQueueNameParallel").IsNullOrEmpty())
             {
-                ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, new object[] { this.GetAttribute("BrokerConnectionStringParallel"), this.GetAttribute("BrokerQueueNameParallel") });
+                ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, [this.GetAttribute("BrokerConnectionStringParallel"), this.GetAttribute("BrokerQueueNameParallel")]);
                 if (serviceString != null)
                     Factory.RegisterInstance(serviceString, nameof(BrokerProducerCommandTextParallel));
             }
@@ -60,7 +62,7 @@ namespace MetaFrm.ApiServer.Controllers
                 {
                     var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                    if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+                    if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                         return this.Unauthorized("Token error.");
 
                     if (serviceData.Commands.Count != 1)
@@ -91,7 +93,7 @@ namespace MetaFrm.ApiServer.Controllers
 
                         Task.Run(() =>
                         {
-                            ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") }))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
+                            ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = serviceData, Response = response }));
                         });
                     }
                     if (!isBrokerProducerCommandTextParallel && this.BrokerProducerCommandTextParallel.Contains(command.Value.CommandText))

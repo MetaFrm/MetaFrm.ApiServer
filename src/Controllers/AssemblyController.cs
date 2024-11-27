@@ -8,27 +8,23 @@ namespace MetaFrm.ApiServer.Controllers
     /// <summary>
     /// AssemblyController
     /// </summary>
+    /// <remarks>
+    /// AssemblyController
+    /// </remarks>
+    /// <param name="logger"></param>
+    /// <param name="factory"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class AssemblyController : ControllerBase, ICore
+    public class AssemblyController(ILogger<AssemblyController> logger, Factory factory) : ControllerBase, ICore
     {
         static readonly object lockObject = new();
-        private readonly ILogger<AssemblyController> _logger;
+        private readonly ILogger<AssemblyController> _logger = logger;
+        private readonly Factory _factory = factory;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
         /// </summary>
-        private static Dictionary<string, string> AssemblyText { get; set; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// AssemblyController
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public AssemblyController(ILogger<AssemblyController> logger, Factory factory)
-        {
-            _logger = logger;
-        }
+        private static Dictionary<string, string> AssemblyText { get; set; } = [];
 
         /// <summary>
         /// Get

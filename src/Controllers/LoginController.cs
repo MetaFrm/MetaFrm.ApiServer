@@ -16,6 +16,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly Factory _factory;
         private readonly bool IsPushNotification;
 
         /// <summary>
@@ -26,6 +27,7 @@ namespace MetaFrm.ApiServer.Controllers
         public LoginController(ILogger<LoginController> logger, Factory factory)
         {
             _logger = logger;
+            _factory = factory;
             this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
 
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
@@ -33,7 +35,7 @@ namespace MetaFrm.ApiServer.Controllers
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
             //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
-            this.CreateInstance("BrokerConsumer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") });
+            this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
         }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = token.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+            if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                 return this.Unauthorized("Token error.");
 
             ServiceData data = new()
@@ -73,7 +75,7 @@ namespace MetaFrm.ApiServer.Controllers
             if (this.IsPushNotification)
                 Task.Run(() =>
                 {
-                    ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") }))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
+                    ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
                 });
 
             if (response.Status != Status.OK)
@@ -90,7 +92,7 @@ namespace MetaFrm.ApiServer.Controllers
             {
                 if (response.DataSet != null && response.DataSet.DataTables != null && response.DataSet.DataTables.Count > 0 && response.DataSet.DataTables[0].DataRows.Count > 0)
                 {
-                    Dictionary<string, string> keyValuePairs = new();
+                    Dictionary<string, string> keyValuePairs = [];
                     string? name;
                     string? value;
 

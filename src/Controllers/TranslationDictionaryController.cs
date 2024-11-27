@@ -9,27 +9,23 @@ namespace MetaFrm.ApiServer.Controllers
     /// <summary>
     /// TranslationDictionaryController
     /// </summary>
+    /// <remarks>
+    /// TranslationDictionaryController
+    /// </remarks>
+    /// <param name="logger"></param>
+    /// <param name="factory"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationDictionaryController : ControllerBase, ICore
+    public class TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory factory) : ControllerBase, ICore
     {
         static readonly object lockObject = new();
-        private readonly ILogger<TranslationDictionaryController> _logger;
+        private readonly ILogger<TranslationDictionaryController> _logger = logger;
+        private readonly Factory _factory = factory;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
         /// </summary>
-        private static Dictionary<string, Response> TranslationDictionary { get; set; } = new Dictionary<string, Response>();
-
-        /// <summary>
-        /// TranslationDictionaryController
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory factory)
-        {
-            _logger = logger;
-        }
+        private static Dictionary<string, Response> TranslationDictionary { get; set; } = [];
 
         /// <summary>
         /// Get
@@ -41,8 +37,8 @@ namespace MetaFrm.ApiServer.Controllers
             string key;
             string path;
 
-            key = $"{Factory.ProjectServiceBase.ProjectID}.{Factory.ProjectServiceBase.ServiceID}";
-            path = $"{Factory.FolderPathDat}{Factory.ProjectServiceBase.ProjectID}_{Factory.ProjectServiceBase.ServiceID}_TD.dat";
+            key = $"{Factory.ProjectServiceBase?.ProjectID}.{Factory.ProjectServiceBase?.ServiceID}";
+            path = $"{Factory.FolderPathDat}{Factory.ProjectServiceBase?.ProjectID}_{Factory.ProjectServiceBase?.ServiceID}_TD.dat";
 
             lock (lockObject)
                 if (TranslationDictionary.TryGetValue(key, out Response? response))

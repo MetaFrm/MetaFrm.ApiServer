@@ -14,6 +14,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class AccessCodeController : ControllerBase, ICore
     {
         private readonly ILogger<AccessCodeController> _logger;
+        private readonly Factory _factory;
         private readonly bool IsEmail;
 
         /// <summary>
@@ -24,6 +25,7 @@ namespace MetaFrm.ApiServer.Controllers
         public AccessCodeController(ILogger<AccessCodeController> logger, Factory factory)
         {
             _logger = logger;
+            _factory = factory;
             this.IsEmail = this.GetAttribute(nameof(this.IsEmail)) == "Y";
 
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
@@ -31,7 +33,7 @@ namespace MetaFrm.ApiServer.Controllers
             //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
             //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
-            this.CreateInstance("BrokerConsumer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") });
+            this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
         }
 
         /// <summary>
@@ -64,7 +66,7 @@ namespace MetaFrm.ApiServer.Controllers
             if (this.IsEmail)
                 Task.Run(() =>
                 {
-                    ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, new object[] { this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName") }))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
+                    ((IServiceString?)this.CreateInstance("BrokerProducer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]))?.Request(System.Text.Json.JsonSerializer.Serialize(new BrokerData { ServiceData = data, Response = response }));
                 });
 
             if (response.Status != Status.OK)

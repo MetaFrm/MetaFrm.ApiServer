@@ -10,21 +10,17 @@ namespace MetaFrm.ApiServer.Controllers
     /// <summary>
     /// ProjectServiceController
     /// </summary>
+    /// <remarks>
+    /// ProjectServiceController
+    /// </remarks>
+    /// <param name="logger"></param>
+    /// <param name="factory"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectServiceController : ControllerBase, ICore
+    public class ProjectServiceController(ILogger<ProjectServiceController> logger, Factory factory) : ControllerBase, ICore
     {
-        private readonly ILogger<ProjectServiceController> _logger;
-
-        /// <summary>
-        /// ProjectServiceController
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public ProjectServiceController(ILogger<ProjectServiceController> logger, Factory factory)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<ProjectServiceController> _logger = logger;
+        private readonly Factory _factory = factory;
 
         /// <summary>
         /// Get
@@ -38,7 +34,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+            if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                 return this.Unauthorized("AccessKey error.");
 
             path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_{DateTime.Now:dd HH:mm:ss}_A_PS.dat";

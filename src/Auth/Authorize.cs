@@ -19,7 +19,7 @@ namespace MetaFrm.ApiServer.Auth
 
         static readonly string path = $"{Factory.FolderPathDat}AuthorizeTokenList.dat";
 
-        internal static Dictionary<string, AuthorizeToken> AuthorizeTokenList = new();
+        internal static Dictionary<string, AuthorizeToken> AuthorizeTokenList = [];
 
         /// <summary>
         /// Authorize class 생성자
@@ -27,8 +27,7 @@ namespace MetaFrm.ApiServer.Auth
         public Authorize() : base(typeof(AuthorizeFilter))
         {
             lock (lockObject)
-                if (Instance == null)
-                    Instance = this;
+                Instance ??= this;
         }
 
         private static void LoadToken()
@@ -85,7 +84,7 @@ namespace MetaFrm.ApiServer.Auth
             }
             catch (Exception)
             {
-                AuthorizeTokenList = new();
+                AuthorizeTokenList = [];
             }
         }
 
@@ -259,7 +258,7 @@ namespace MetaFrm.ApiServer.Auth
         }
         private static Dictionary<string, AuthorizeToken> DeleteToken(Dictionary<string, AuthorizeToken> authorizeToken)
         {
-            List<string> delete = new();
+            List<string> delete = [];
 
             foreach (var item in authorizeToken.Keys)
                 if (authorizeToken[item].IsExpired)
