@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MetaFrm.ApiServer</RootNamespace>
     <AssemblyName>MetaFrm.ApiServer</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageId>MetaFrm.ApiServer.net7.0</PackageId>
-    <Version>7.0.3.46</Version>
+    <PackageId>MetaFrm.ApiServer.net9.0</PackageId>
+    <Version>9.0.4.1</Version>
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2024. dsun all rights reserved.</Copyright>
@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
-    <PackageReference Include="MetaFrm.Core.net7.0" Version="7.0.3.44" />
+    <PackageReference Include="MetaFrm.Core.net9.0" Version="9.0.4.1" />
     <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.1.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
