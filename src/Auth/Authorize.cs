@@ -191,12 +191,16 @@ namespace MetaFrm.ApiServer.Auth
         {
             if (authorizeToken.Token != null)
             {
-                //var projectServiceBase = AuthorizeTokenList.Where(x => x.Value.ProjectServiceBase.ProjectID == projectID && x.Value.ProjectServiceBase.ServiceID == serviceID);
-
-                //if (projectServiceBase != null && projectServiceBase.Any())
-                //    projectServiceBase.FirstOrDefault().Value.ExpiryDateTime = DateTime.UtcNow;
                 lock (lockObject)
+                {
+                    if (IsFirst)
+                    {
+                        IsFirst = false;
+                        LoadToken();
+                    }
+
                     AuthorizeTokenList.Add(authorizeToken.Token, authorizeToken);
+                }
 
                 Task.Run(delegate
                 {
