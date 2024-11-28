@@ -34,8 +34,14 @@ namespace MetaFrm.ApiServer.Controllers
 
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-            if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
-                return this.Unauthorized("AccessKey error.");
+            if (projectServiceBase == null)
+                return this.Unauthorized("AccessKey error(projectServiceBase == null).");
+
+            if (Factory.ProjectServiceBase == null)
+                return this.Unauthorized("AccessKey error(Factory.ProjectServiceBase == null).");
+
+            if (projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+                return this.Unauthorized("AccessKey error(projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID).");
 
             path = $"{Factory.FolderPathDat}{projectServiceBase.ProjectID}_{projectServiceBase.ServiceID}_{DateTime.Now:dd HH:mm:ss}_A_PS.dat";
 
