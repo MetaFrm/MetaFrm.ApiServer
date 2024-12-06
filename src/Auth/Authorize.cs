@@ -1,6 +1,8 @@
 ﻿using MetaFrm.Database;
 using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace MetaFrm.ApiServer.Auth
 {
@@ -10,16 +12,11 @@ namespace MetaFrm.ApiServer.Auth
     public class Authorize : TypeFilterAttribute, ICore
     {
         static bool IsFirst = true;
-
         static Authorize? Instance;
-
         static string? Type = "FILE";
-
         static readonly object lockObject = new();
-
         static readonly string path = $"{Factory.FolderPathDat}AuthorizeTokenList.dat";
-
-        internal static Dictionary<string, AuthorizeToken> AuthorizeTokenList = [];
+        internal static ConcurrentDictionary<string, AuthorizeToken> AuthorizeTokenList = [];
 
         /// <summary>
         /// Authorize class 생성자
@@ -60,53 +57,89 @@ namespace MetaFrm.ApiServer.Auth
 
             if (response.Status == Status.OK)
             {
+                bool failTryAdd = false;
+                string lastFailToken = "";
+
                 if (response.DataSet != null && response.DataSet.DataTables != null && response.DataSet.DataTables.Count > 0 && response.DataSet.DataTables[0].DataRows.Count > 0)
                     foreach (Data.DataRow dataRow in response.DataSet.DataTables[0].DataRows)
                     {
                         string TOKEN_STR = dataRow.String("TOKEN_STR") ?? throw new Exception("TOKEN_STR is null");
 
-                        AuthorizeTokenList.Add(TOKEN_STR,
+                        if (!AuthorizeTokenList.TryAdd(TOKEN_STR,
                             new AuthorizeToken(TOKEN_STR
                             , dataRow.Decimal("PROJECT_ID") ?? throw new Exception("PROJECT_ID is null")
                             , dataRow.Decimal("SERVICE_ID") ?? throw new Exception("SERVICE_ID is null")
                             , dataRow.String("TOKEN_TYPE") ?? throw new Exception("TOKEN_TYPE is null")
                             , dataRow.DateTime("EXPIRY_DATETIME") ?? throw new Exception("EXPIRY_DATETIME is null")
                             , dataRow.String("USER_KEY")
-                            , dataRow.String("IP")));
+                            , dataRow.String("IP")))
+                            && !failTryAdd)
+                        {
+                            failTryAdd = true;
+                            lastFailToken = TOKEN_STR;
+                        }
                     }
+
+                if (failTryAdd)
+                    Factory.Logger.LogError("LoadTokenDB AuthorizeTokenList TryAdd Fail : {lastFailToken}", lastFailToken);
             }
+            else
+                Factory.Logger.LogError("LoadTokenDB request fail : {Message}", response.Message);
         }
         private static void LoadTokenFile()
         {
             try
             {
-                AuthorizeTokenList = Factory.LoadInstance<Dictionary<string, AuthorizeToken>>(path);
+                AuthorizeTokenList = Factory.LoadInstance<ConcurrentDictionary<string, AuthorizeToken>>(path);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Factory.Logger.LogError(ex, "LoadTokenFile : {Message}", ex.Message);
                 AuthorizeTokenList = [];
             }
         }
 
         internal static bool IsToken(string token, string tokenType)
         {
-            lock (lockObject)
+
+            if (IsFirst)
             {
-                if (IsFirst)
+                lock (lockObject)
                 {
-                    IsFirst = false;
-                    LoadToken();
+                    if (IsFirst)
+                    {
+                        IsFirst = false;
+                        LoadToken();
+                    }
+
+                    if (!AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken))
+                    {
+                        return Type switch
+                        {
+                            "DB" => IsTokenDB(token, tokenType),
+                            "FILE" => false,
+                            _ => false,
+                        };
+                    }
+
+                    if (authorizeToken.IsExpired)
+                        return false;
+
+                    if (authorizeToken.TokenType != tokenType)
+                        return false;
                 }
-
-                AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken);
-
-                if (authorizeToken == null)
+            }
+            else
+            {
+                if (!AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken))
+                {
                     return Type switch
                     {
                         "DB" => IsTokenDB(token, tokenType),
                         "FILE" => false,
                         _ => false,
                     };
+                }
 
                 if (authorizeToken.IsExpired)
                     return false;
@@ -143,18 +176,24 @@ namespace MetaFrm.ApiServer.Auth
 
                         string TOKEN_STR = dataRow.String("TOKEN_STR") ?? throw new Exception("TOKEN_STR is null");
 
-                        AuthorizeTokenList.Add(TOKEN_STR,
+                        if (!AuthorizeTokenList.TryAdd(TOKEN_STR,
                             new AuthorizeToken(TOKEN_STR
                             , dataRow.Decimal("PROJECT_ID") ?? throw new Exception("PROJECT_ID is null")
                             , dataRow.Decimal("SERVICE_ID") ?? throw new Exception("SERVICE_ID is null")
                             , TOKEN_TYPE ?? throw new Exception("TOKEN_TYPE is null")
                             , dataRow.DateTime("EXPIRY_DATETIME") ?? throw new Exception("EXPIRY_DATETIME is null")
                             , dataRow.String("USER_KEY")
-                            , dataRow.String("IP")));
+                            , dataRow.String("IP"))))
+                        {
+                            Factory.Logger.LogError("IsTokenDB AuthorizeTokenList TryAdd Fail : {TOKEN_STR}", TOKEN_STR);
+                            return false;
+                        }
 
                         return true;
                     }
             }
+            else
+                Factory.Logger.LogError("IsTokenDB request fail : {Message}", response.Message);
 
             return false;
         }
@@ -190,15 +229,21 @@ namespace MetaFrm.ApiServer.Auth
         {
             if (authorizeToken.Token != null)
             {
-                lock (lockObject)
+                if (IsFirst)
                 {
-                    if (IsFirst)
+                    lock (lockObject)
                     {
                         IsFirst = false;
                         LoadToken();
-                    }
 
-                    AuthorizeTokenList.Add(authorizeToken.Token, authorizeToken);
+                        if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken))
+                            Factory.Logger.LogError("AddAuthorizeTokenList AuthorizeTokenList TryAdd Fail (IsFirst) : {Token}", authorizeToken.Token);
+                    }
+                }
+                else
+                {
+                    if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken))
+                        Factory.Logger.LogError("AddAuthorizeTokenList AuthorizeTokenList TryAdd Fail (IsFirst) : {Token}", authorizeToken.Token);
                 }
 
                 Task.Run(delegate
@@ -240,7 +285,7 @@ namespace MetaFrm.ApiServer.Auth
 
             if (response.Status != Status.OK)
             {
-                Console.WriteLine(response.Message);
+                Factory.Logger.LogError("SaveTokenDB request fail : {Message}", response.Message);
                 SaveTokenFile();
             }
         }
@@ -253,10 +298,10 @@ namespace MetaFrm.ApiServer.Auth
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Factory.Logger.LogError(ex, "SaveTokenFile : {Message}", ex.Message);
             }
         }
-        private static Dictionary<string, AuthorizeToken> DeleteToken(Dictionary<string, AuthorizeToken> authorizeToken)
+        private static ConcurrentDictionary<string, AuthorizeToken> DeleteToken(ConcurrentDictionary<string, AuthorizeToken> authorizeToken)
         {
             List<string> delete = [];
 
@@ -264,8 +309,19 @@ namespace MetaFrm.ApiServer.Auth
                 if (authorizeToken[item].IsExpired)
                     delete.Add(item);
 
+            string message;
             foreach (var item in delete)
-                authorizeToken.Remove(item);
+            {
+                if (!authorizeToken.TryRemove(item, out AuthorizeToken? authorize))
+                {
+                    if (authorize == null)
+                        message = "authorize == null";
+                    else
+                        message = item;
+
+                    Factory.Logger.LogError("DeleteToken AuthorizeTokenList TryRemove fail : {message}", message);
+                }
+            }
 
             return authorizeToken;
         }

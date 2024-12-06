@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 
 namespace MetaFrm.ApiServer.Controllers
@@ -18,14 +19,13 @@ namespace MetaFrm.ApiServer.Controllers
     [ApiController]
     public class TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory factory) : ControllerBase, ICore
     {
-        static readonly object lockObject = new();
         private readonly ILogger<TranslationDictionaryController> _logger = logger;
         private readonly Factory _factory = factory;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
         /// </summary>
-        private static Dictionary<string, Response> TranslationDictionary { get; set; } = [];
+        private static ConcurrentDictionary<string, Response> TranslationDictionary { get; set; } = [];
 
         /// <summary>
         /// Get
@@ -40,9 +40,8 @@ namespace MetaFrm.ApiServer.Controllers
             key = $"{Factory.ProjectServiceBase?.ProjectID}.{Factory.ProjectServiceBase?.ServiceID}";
             path = $"{Factory.FolderPathDat}{Factory.ProjectServiceBase?.ProjectID}_{Factory.ProjectServiceBase?.ServiceID}_TD.dat";
 
-            lock (lockObject)
-                if (TranslationDictionary.TryGetValue(key, out Response? response))
-                    return Ok(response);
+            if (TranslationDictionary.TryGetValue(key, out Response? response))
+                return Ok(response);
 
             try
             {
@@ -63,18 +62,13 @@ namespace MetaFrm.ApiServer.Controllers
 
                     if (result != null)
                     {
-                        lock (lockObject)
-                            if (!TranslationDictionary.TryGetValue(key, out Response? result1))
-                            {
-                                TranslationDictionary.Add(key, result);
+                        if (!TranslationDictionary.TryAdd(key, result))
+                            _logger.LogError("GetTranslationDictionary TranslationDictionary TryAdd Fail : {key}", key);
 
-                                Task.Run(delegate
-                                {
-                                    Factory.SaveInstance(result, path);
-                                });
-                            }
-                            else
-                                result = result1;
+                        Task.Run(delegate
+                        {
+                            Factory.SaveInstance(result, path);
+                        });
 
                         return Ok(result);
                     }
@@ -84,15 +78,14 @@ namespace MetaFrm.ApiServer.Controllers
             {
                 _logger.LogError(ex, "GetTranslationDictionary : {Message}", ex.Message);
 
-                lock (lockObject)
-                    TranslationDictionary.Add(key, Factory.LoadInstance<Response>(path));
+                if (!TranslationDictionary.TryAdd(key, Factory.LoadInstance<Response>(path)))
+                    _logger.LogError("GetTranslationDictionary TranslationDictionary TryAdd Factory.LoadInstance Fail : {key}, {path}", key, path);
             }
 
-            lock (lockObject)
-                if (TranslationDictionary.TryGetValue(key, out Response? projectService))
-                    return Ok(projectService);
-                else
-                    return Ok(null);
+            if (TranslationDictionary.TryGetValue(key, out Response? projectService))
+                return Ok(projectService);
+            else
+                return Ok(null);
         }
     }
 }
