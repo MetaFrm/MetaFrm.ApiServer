@@ -80,7 +80,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             if (response.Status != Status.OK)
             {
-                _logger.LogError(0, "[{Now}] {Message} Token:{token}, Email:{email}, Password:{password}", DateTime.Now, response.Message, token, email, password);
+                _logger.LogError("{Message} Token:{token}, Email:{email}, Password:{password}", response.Message, token, email, password);
 
                 return Ok(new UserInfo()
                 {
@@ -121,7 +121,7 @@ namespace MetaFrm.ApiServer.Controllers
                 }
                 else
                 {
-                    _logger.LogError(0, "[{Now}] Account information is missing. Token:{token}, Email:{email}, Password:{password}", DateTime.Now, token, email, password);
+                    _logger.LogError("Account information is missing. Token:{token}, Email:{email}, Password:{password}", token, email, password);
                     return Ok(null);
                 }
             }

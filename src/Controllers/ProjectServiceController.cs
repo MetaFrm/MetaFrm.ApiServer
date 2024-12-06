@@ -72,22 +72,7 @@ namespace MetaFrm.ApiServer.Controllers
             }
             catch (Exception ex)
             {
-                StreamWriter? streamWriter = null;
-
-                try
-                {
-                    //Factory.SaveInstance(ex, $"{path}e");
-
-                    streamWriter = System.IO.File.CreateText($"{path}e");
-                    streamWriter.Write(ex.ToString());
-                }
-                catch (Exception)
-                {
-                }
-                finally
-                {
-                    streamWriter?.Close();
-                }
+                _logger.LogError(ex, "GetProjectService : {Message}", ex.Message);
             }
 
             return Ok(null);

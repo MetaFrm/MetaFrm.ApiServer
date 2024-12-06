@@ -80,8 +80,10 @@ namespace MetaFrm.ApiServer.Controllers
                     }
                 }
             }
-            catch (HttpRequestException)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "GetTranslationDictionary : {Message}", ex.Message);
+
                 lock (lockObject)
                     TranslationDictionary.Add(key, Factory.LoadInstance<Response>(path));
             }

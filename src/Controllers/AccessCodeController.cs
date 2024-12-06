@@ -71,7 +71,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             if (response.Status != Status.OK)
             {
-                _logger.LogError(0, "[{Now}] {Message} Email:{email}, AccessGroup:{accessGroup}", DateTime.Now, response.Message, email, accessGroup);
+                _logger.LogError("{Message} Email:{email}, AccessGroup:{accessGroup}", response.Message, email, accessGroup);
 
                 if (response.Message != null)
                     return this.BadRequest(response.Message);
@@ -91,7 +91,7 @@ namespace MetaFrm.ApiServer.Controllers
                 }
                 else
                 {
-                    _logger.LogError(0, "[{Now}] There are no projects or services. Email:{email}, AccessGroup:{accessGroup}", DateTime.Now, email, accessGroup);
+                    _logger.LogError("There are no projects or services. Email:{email}, AccessGroup:{accessGroup}", email, accessGroup);
 
                     return this.BadRequest("Access Code generation failed.");
                 }

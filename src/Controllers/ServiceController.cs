@@ -108,14 +108,14 @@ namespace MetaFrm.ApiServer.Controllers
                     }
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                _logger.LogError(0, "[{Now}] Service execute exception. Exception:{exception}", DateTime.Now, exception);
+                _logger.LogError(ex, "GetService : {Message}", ex.Message);
 
                 response = new()
                 {
                     Status = Status.Failed,
-                    Message = exception.Message,
+                    Message = ex.Message,
                     //#if DEBUG
                     //                    ServiceException = new ServiceException(exception),
                     //#endif
