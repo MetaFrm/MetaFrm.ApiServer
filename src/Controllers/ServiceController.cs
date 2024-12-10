@@ -65,7 +65,7 @@ namespace MetaFrm.ApiServer.Controllers
                     if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                         return this.Unauthorized("Token error.");
 
-                    if (serviceData.Commands.Count != 1)
+                    if (serviceData.Commands.Count < 1)
                         return this.BadRequest("No command.");
 
                     foreach (var command in serviceData.Commands)
