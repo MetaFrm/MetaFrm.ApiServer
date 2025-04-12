@@ -22,10 +22,22 @@ namespace MetaFrm.ApiServer.Auth
         /// </summary>
         public DateTime ExpiryDateTime { get; set; }
 
+        private TimeSpan expiryTimeSpan;
         /// <summary>
         /// Expiry TimeSpan
         /// </summary>
-        public TimeSpan ExpiryTimeSpan { get; set; }
+        public TimeSpan ExpiryTimeSpan
+        {
+            get
+            {
+                return this.expiryTimeSpan;
+            }
+            set
+            {
+                this.expiryTimeSpan = value;
+                this.ExpiryDateTime = CreateDateTime.AddTicks(this.expiryTimeSpan.Ticks);
+            }
+        }
 
         /// <summary>
         /// IsExpired
@@ -166,10 +178,7 @@ namespace MetaFrm.ApiServer.Auth
         private void CreateToken()
         {
             if (this.Token.IsNullOrEmpty())
-            {
                 this.Token = Guid.NewGuid().ToString().Replace("-", "");
-                this.ExpiryDateTime = CreateDateTime.AddTicks(ExpiryTimeSpan.Ticks);
-            }
         }   
     }
 }

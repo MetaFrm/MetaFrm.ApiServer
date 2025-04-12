@@ -64,7 +64,7 @@ namespace MetaFrm.ApiServer.Controllers
 
                     if (projectService != null)
                     {
-                        projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(365), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
+                        projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays")), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
 
                         return Ok(projectService);
                     }
