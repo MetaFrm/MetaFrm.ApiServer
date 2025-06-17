@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>MetaFrm.ApiServer.net8.0</PackageId>
-    <Version>8.0.4.30</Version>
+    <Version>8.0.4.35</Version>
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2025. dsun all rights reserved.</Copyright>
@@ -56,10 +56,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.2.0" />
-    <PackageReference Include="MetaFrm.Core.net8.0" Version="8.0.4.30" />
+    <PackageReference Include="MetaFrm.Core.net8.0" Version="8.0.4.35" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.10" />
     <PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.13" />
