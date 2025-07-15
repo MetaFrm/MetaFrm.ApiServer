@@ -14,25 +14,22 @@ namespace MetaFrm.ApiServer.Controllers
     public class ServiceController : ControllerBase, ICore
     {
         private readonly ILogger<ServiceController> _logger;
-        private readonly Factory _factory;
-        private readonly string[] NotAuthorizeCommandText = (Factory.ProjectService.GetAttributeValue(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
-        private readonly string[] BrokerProducerCommandText = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandText)) ?? "").Split(',');
-        private readonly string[] BrokerProducerCommandTextParallel = (Factory.ProjectService.GetAttributeValue(nameof(BrokerProducerCommandTextParallel)) ?? "").Split(',');
+        private readonly string[] NotAuthorizeCommandText;
+        private readonly string[] BrokerProducerCommandText;
+        private readonly string[] BrokerProducerCommandTextParallel;
 
         /// <summary>
         /// ServiceController
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public ServiceController(ILogger<ServiceController> logger, Factory factory)
+        /// <param name="_"></param>
+        public ServiceController(ILogger<ServiceController> logger, Factory _)
         {
             _logger = logger;
-            _factory = factory;
 
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQConsumer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQConsumer");
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
+            this.NotAuthorizeCommandText = (this.GetAttribute(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
+            this.BrokerProducerCommandText = (this.GetAttribute(nameof(BrokerProducerCommandText)) ?? "").Split(',');
+            this.BrokerProducerCommandTextParallel = (this.GetAttribute(nameof(BrokerProducerCommandTextParallel)) ?? "").Split(',');
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
 
@@ -116,9 +113,6 @@ namespace MetaFrm.ApiServer.Controllers
                 {
                     Status = Status.Failed,
                     Message = ex.Message,
-                    //#if DEBUG
-                    //                    ServiceException = new ServiceException(exception),
-                    //#endif
                 };
             }
 

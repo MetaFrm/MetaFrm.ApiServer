@@ -16,24 +16,17 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly Factory _factory;
         private readonly bool IsPushNotification;
 
         /// <summary>
         /// AssemblyController
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public LoginController(ILogger<LoginController> logger, Factory factory)
+        /// <param name="_"></param>
+        public LoginController(ILogger<LoginController> logger, Factory _)
         {
             _logger = logger;
-            _factory = factory;
             this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
-
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQConsumer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQConsumer");
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
         }

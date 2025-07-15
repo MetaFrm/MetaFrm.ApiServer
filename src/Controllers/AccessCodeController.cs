@@ -14,24 +14,17 @@ namespace MetaFrm.ApiServer.Controllers
     public class AccessCodeController : ControllerBase, ICore
     {
         private readonly ILogger<AccessCodeController> _logger;
-        private readonly Factory _factory;
         private readonly bool IsEmail;
 
         /// <summary>
         /// AccessCodeController
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="factory"></param>
-        public AccessCodeController(ILogger<AccessCodeController> logger, Factory factory)
+        /// <param name="_"></param>
+        public AccessCodeController(ILogger<AccessCodeController> logger, Factory _)
         {
             _logger = logger;
-            _factory = factory;
             this.IsEmail = this.GetAttribute(nameof(this.IsEmail)) == "Y";
-
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQConsumer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQConsumer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQConsumer");
-            //if (!Factory.IsRegisterInstance("MetaFrm.Service.RabbitMQProducer"))
-            //    Factory.RegisterInstance(new MetaFrm.Service.RabbitMQProducer(this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")), "MetaFrm.Service.RabbitMQProducer");
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
         }

@@ -10,17 +10,13 @@ namespace MetaFrm.ApiServer.Controllers
     /// <summary>
     /// TranslationDictionaryController
     /// </summary>
-    /// <remarks>
-    /// TranslationDictionaryController
-    /// </remarks>
     /// <param name="logger"></param>
-    /// <param name="factory"></param>
+    /// <param name="_"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory factory) : ControllerBase, ICore
+    public class TranslationDictionaryController(ILogger<TranslationDictionaryController> logger, Factory _) : ControllerBase, ICore
     {
         private readonly ILogger<TranslationDictionaryController> _logger = logger;
-        private readonly Factory _factory = factory;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.

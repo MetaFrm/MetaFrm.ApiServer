@@ -7,13 +7,9 @@ namespace MetaFrm.ApiServer.Auth
     /// <summary>
     /// AuthorizeFilter
     /// </summary>
-    /// <remarks>
-    /// AuthorizeFilter class 생성자
-    /// </remarks>
-    public class AuthorizeFilter(Factory factory) : IAuthorizationFilter, ICore
+    /// <param name="_"></param>
+    public class AuthorizeFilter(Factory _) : IAuthorizationFilter, ICore
     {
-        private readonly Factory _factory = factory;
-
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -66,13 +62,6 @@ namespace MetaFrm.ApiServer.Auth
 
             if (!Authorize.IsToken(token, "PROJECT_SERVICE"))
                 context.Result = new UnauthorizedObjectResult("Authorization failed.");//인증 오류
-
-            //var hasClaim = context.HttpContext.User.Claims.Any(c => c.Type == _claim.Type && c.Value == _claim.Value);
-            //if (!hasClaim)
-            //{
-            //    context.Result = new ForbidResult();//권한 없음
-            //    context.Result = new UnauthorizedObjectResult("Authorization failed.");//인증 오류
-            //}
         }
     }
 }
