@@ -18,8 +18,6 @@ namespace MetaFrm.ApiServer
         /// <returns></returns>
         public static IServiceCollection AddMetaFrm(this IServiceCollection services)
         {
-            services.AddSingleton<INotifyPropertyChanged, MetaFrm.ComponentModel.DummyNotifyPropertyChanged>();//Dummy Maui xaml
-
             services.AddFactory(new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
                                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true), DevicePlatform.Server);
