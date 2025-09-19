@@ -41,7 +41,7 @@ namespace MetaFrm.ApiServer.Controllers
                 return Ok(null);
 
             key = string.Format("{0}.{1}.{2}", authorizeToken.ProjectServiceBase.ProjectID, authorizeToken.ProjectServiceBase.ServiceID, fullNamespace);
-            path = $"{Factory.FolderPathDat}{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}_A.dat";
+            path = Path.Combine(Factory.FolderPathDat, $"{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}_A.dat");
 
             if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
                 return Ok(value);
