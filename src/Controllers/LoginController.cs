@@ -16,6 +16,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class LoginController : ControllerBase, ICore
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly Factory factory;
         private readonly bool IsPushNotification;
 
         /// <summary>
@@ -25,7 +26,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="_"></param>
         public LoginController(ILogger<LoginController> logger, Factory _)
         {
-            _logger = logger;
+            this._logger = logger;
+            this.factory = _;
             this.IsPushNotification = this.GetAttribute(nameof(this.IsPushNotification)) == "Y";
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
@@ -73,7 +75,8 @@ namespace MetaFrm.ApiServer.Controllers
 
             if (response.Status != Status.OK)
             {
-                _logger.LogError("{Message} Token:{token}, Email:{email}, Password:{password}", response.Message, token, email, password);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError("{Message} Token:{token}, Email:{email}, Password:{password}", response.Message, token, email, password);
 
                 return Ok(new UserInfo()
                 {
@@ -114,7 +117,8 @@ namespace MetaFrm.ApiServer.Controllers
                 }
                 else
                 {
-                    _logger.LogError("Account information is missing. Token:{token}, Email:{email}, Password:{password}", token, email, password);
+                    if (this._logger.IsEnabled(LogLevel.Error))
+                        this._logger.LogError("Account information is missing. Token:{token}, Email:{email}, Password:{password}", token, email, password);
                     return Ok(null);
                 }
             }

@@ -14,8 +14,8 @@ namespace MetaFrm.ApiServer.Auth
         static bool IsFirst = true;
         static Authorize? Instance;
         static string? Type = "FILE";
-        static readonly object lockObject = new();
-        static readonly string path = $"{Factory.FolderPathDat}AuthorizeTokenList.dat";
+        static readonly Lock lockObject = new();
+        static readonly string path = Path.Combine(Factory.FolderPathDat, "AuthorizeTokenList.dat");
         internal static ConcurrentDictionary<string, AuthorizeToken> AuthorizeTokenList = [];
 
         /// <summary>
@@ -80,11 +80,14 @@ namespace MetaFrm.ApiServer.Auth
                         }
                     }
 
-                if (failTryAdd)
-                    Factory.Logger.LogError("LoadTokenDB AuthorizeTokenList TryAdd Fail : {lastFailToken}", lastFailToken);
+                if (failTryAdd && Factory.Logger.IsEnabled(LogLevel.Warning))
+                    Factory.Logger.LogWarning("LoadTokenDB AuthorizeTokenList TryAdd Fail : {lastFailToken}", lastFailToken);
             }
             else
-                Factory.Logger.LogError("LoadTokenDB request fail : {Message}", response.Message);
+            {
+                if (Factory.Logger.IsEnabled(LogLevel.Error))
+                    Factory.Logger.LogError("LoadTokenDB request fail : {Message}", response.Message);
+            }
         }
         private static void LoadTokenFile()
         {
@@ -94,7 +97,8 @@ namespace MetaFrm.ApiServer.Auth
             }
             catch (Exception ex)
             {
-                Factory.Logger.LogError(ex, "LoadTokenFile : {Message}", ex.Message);
+                if (Factory.Logger.IsEnabled(LogLevel.Error))
+                    Factory.Logger.LogError(ex, "LoadTokenFile : {Message}", ex.Message);
                 AuthorizeTokenList = [];
             }
         }
@@ -185,7 +189,8 @@ namespace MetaFrm.ApiServer.Auth
                             , dataRow.String("USER_KEY")
                             , dataRow.String("IP"))))
                         {
-                            Factory.Logger.LogError("IsTokenDB AuthorizeTokenList TryAdd Fail : {TOKEN_STR}", TOKEN_STR);
+                            if (Factory.Logger.IsEnabled(LogLevel.Warning))
+                                Factory.Logger.LogWarning("IsTokenDB AuthorizeTokenList TryAdd Fail : {TOKEN_STR}", TOKEN_STR);
                             return false;
                         }
 
@@ -193,7 +198,10 @@ namespace MetaFrm.ApiServer.Auth
                     }
             }
             else
-                Factory.Logger.LogError("IsTokenDB request fail : {Message}", response.Message);
+            {
+                if (Factory.Logger.IsEnabled(LogLevel.Error))
+                    Factory.Logger.LogError("IsTokenDB request fail : {Message}", response.Message);
+            }
 
             return false;
         }
@@ -236,14 +244,14 @@ namespace MetaFrm.ApiServer.Auth
                         IsFirst = false;
                         LoadToken();
 
-                        if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken))
+                        if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken) && Factory.Logger.IsEnabled(LogLevel.Error))
                             Factory.Logger.LogError("AddAuthorizeTokenList AuthorizeTokenList TryAdd Fail (IsFirst) : {Token}", authorizeToken.Token);
                     }
                 }
                 else
                 {
-                    if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken))
-                        Factory.Logger.LogError("AddAuthorizeTokenList AuthorizeTokenList TryAdd Fail (IsFirst) : {Token}", authorizeToken.Token);
+                    if (!AuthorizeTokenList.TryAdd(authorizeToken.Token, authorizeToken) && Factory.Logger.IsEnabled(LogLevel.Warning))
+                        Factory.Logger.LogWarning("AddAuthorizeTokenList AuthorizeTokenList TryAdd Fail : {Token}", authorizeToken.Token);
                 }
 
                 Task.Run(delegate
@@ -285,7 +293,8 @@ namespace MetaFrm.ApiServer.Auth
 
             if (response.Status != Status.OK)
             {
-                Factory.Logger.LogError("SaveTokenDB request fail : {Message}", response.Message);
+                if (Factory.Logger.IsEnabled(LogLevel.Error))
+                    Factory.Logger.LogError("SaveTokenDB request fail : {Message}", response.Message);
                 SaveTokenFile();
             }
         }
@@ -298,7 +307,8 @@ namespace MetaFrm.ApiServer.Auth
             }
             catch (Exception ex)
             {
-                Factory.Logger.LogError(ex, "SaveTokenFile : {Message}", ex.Message);
+                if (Factory.Logger.IsEnabled(LogLevel.Error))
+                    Factory.Logger.LogError(ex, "SaveTokenFile : {Message}", ex.Message);
             }
         }
         private static ConcurrentDictionary<string, AuthorizeToken> DeleteToken(ConcurrentDictionary<string, AuthorizeToken> authorizeToken)
@@ -319,7 +329,8 @@ namespace MetaFrm.ApiServer.Auth
                     else
                         message = item;
 
-                    Factory.Logger.LogError("DeleteToken AuthorizeTokenList TryRemove fail : {message}", message);
+                    if (Factory.Logger.IsEnabled(LogLevel.Warning))
+                        Factory.Logger.LogWarning("DeleteToken AuthorizeTokenList TryRemove fail : {message}", message);
                 }
             }
 

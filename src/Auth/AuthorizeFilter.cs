@@ -10,6 +10,8 @@ namespace MetaFrm.ApiServer.Auth
     /// <param name="_"></param>
     public class AuthorizeFilter(Factory _) : IAuthorizationFilter, ICore
     {
+        private readonly Factory factory = _;
+
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>

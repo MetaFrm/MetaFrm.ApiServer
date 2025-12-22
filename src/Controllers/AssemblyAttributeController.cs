@@ -18,6 +18,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class AssemblyAttributeController(ILogger<AssemblyAttributeController> logger, Factory _) : ControllerBase, ICore
     {
         private readonly ILogger<AssemblyAttributeController> _logger = logger;
+        private readonly Factory factory = _;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
@@ -65,8 +66,8 @@ namespace MetaFrm.ApiServer.Controllers
 
                     if (assemblyAttribute != null)
                     {
-                        if (!AssemblyAttributes.TryAdd(key, assemblyAttribute))
-                            _logger.LogError("GetAssemblyAttribute AssemblyAttributes TryAdd Fail : {key}", key);
+                        if (!AssemblyAttributes.TryAdd(key, assemblyAttribute) && this._logger.IsEnabled(LogLevel.Warning))
+                            this._logger.LogWarning("GetAssemblyAttribute AssemblyAttributes TryAdd Fail : {key}", key);
 
                         Task.Run(delegate
                         {
@@ -77,10 +78,11 @@ namespace MetaFrm.ApiServer.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetAssemblyAttribute : {Message}", ex.Message);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError(ex, "GetAssemblyAttribute : {Message}", ex.Message);
 
-                if (!AssemblyAttributes.TryAdd(key, Factory.LoadInstance<AssemblyAttribute>(path)))
-                    _logger.LogError("GetAssemblyAttribute AssemblyAttributes TryAdd Factory.LoadInstance Fail : {key}, {path}", key, path);
+                if (!AssemblyAttributes.TryAdd(key, Factory.LoadInstance<AssemblyAttribute>(path)) && this._logger.IsEnabled(LogLevel.Warning))
+                    this._logger.LogWarning("GetAssemblyAttribute AssemblyAttributes TryAdd Factory.LoadInstance Fail : {key}, {path}", key, path);
             }
 
             if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value2))

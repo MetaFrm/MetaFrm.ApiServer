@@ -16,6 +16,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class AssemblyController(ILogger<AssemblyController> logger, Factory _) : ControllerBase, ICore
     {
         private readonly ILogger<AssemblyController> _logger = logger;
+        private readonly Factory factory = _;
 
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
@@ -63,8 +64,8 @@ namespace MetaFrm.ApiServer.Controllers
 
                     if (!assembly.IsNullOrEmpty())
                     {
-                        if (!AssemblyText.TryAdd(key, assembly))
-                            _logger.LogError("GetAssembly AssemblyText TryAdd Fail : {key}", key);
+                        if (!AssemblyText.TryAdd(key, assembly) && this._logger.IsEnabled(LogLevel.Warning))
+                            this._logger.LogWarning("GetAssembly AssemblyText TryAdd Fail : {key}", key);
 
                         Task.Run(delegate
                         {
@@ -75,10 +76,11 @@ namespace MetaFrm.ApiServer.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetAssembly : {Message}", ex.Message);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError(ex, "GetAssembly : {Message}", ex.Message);
 
-                if (!AssemblyText.TryAdd(key, Factory.LoadString(path)))
-                    _logger.LogError("GetAssembly AssemblyText TryAdd Factory.LoadString Fail : {key}, {path}", key, path);
+                if (!AssemblyText.TryAdd(key, Factory.LoadString(path)) && this._logger.IsEnabled(LogLevel.Warning))
+                    this._logger.LogWarning("GetAssembly AssemblyText TryAdd Factory.LoadString Fail : {key}, {path}", key, path);
             }
 
             if (AssemblyText.TryGetValue(key, out string? value2))

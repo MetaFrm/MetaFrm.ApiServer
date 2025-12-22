@@ -14,6 +14,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class AccessCodeController : ControllerBase, ICore
     {
         private readonly ILogger<AccessCodeController> _logger;
+        private readonly Factory factory;
         private readonly bool IsEmail;
 
         /// <summary>
@@ -23,7 +24,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="_"></param>
         public AccessCodeController(ILogger<AccessCodeController> logger, Factory _)
         {
-            _logger = logger;
+            this._logger = logger;
+            this.factory = _;
             this.IsEmail = this.GetAttribute(nameof(this.IsEmail)) == "Y";
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
@@ -64,7 +66,8 @@ namespace MetaFrm.ApiServer.Controllers
 
             if (response.Status != Status.OK)
             {
-                _logger.LogError("{Message} Email:{email}, AccessGroup:{accessGroup}", response.Message, email, accessGroup);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError("{Message} Email:{email}, AccessGroup:{accessGroup}", response.Message, email, accessGroup);
 
                 if (response.Message != null)
                     return this.BadRequest(response.Message);
@@ -84,7 +87,8 @@ namespace MetaFrm.ApiServer.Controllers
                 }
                 else
                 {
-                    _logger.LogError("There are no projects or services. Email:{email}, AccessGroup:{accessGroup}", email, accessGroup);
+                    if (this._logger.IsEnabled(LogLevel.Error))
+                        this._logger.LogError("There are no projects or services. Email:{email}, AccessGroup:{accessGroup}", email, accessGroup);
 
                     return this.BadRequest("Access Code generation failed.");
                 }

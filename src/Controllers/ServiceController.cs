@@ -14,6 +14,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class ServiceController : ControllerBase, ICore
     {
         private readonly ILogger<ServiceController> _logger;
+        private readonly Factory factory;
         private readonly string[] NotAuthorizeCommandText;
         private readonly string[] BrokerProducerCommandText;
         private readonly string[] BrokerProducerCommandTextParallel;
@@ -25,7 +26,8 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="_"></param>
         public ServiceController(ILogger<ServiceController> logger, Factory _)
         {
-            _logger = logger;
+            this._logger = logger;
+            this.factory = _;
 
             this.NotAuthorizeCommandText = (this.GetAttribute(nameof(NotAuthorizeCommandText)) ?? "").Split(',');
             this.BrokerProducerCommandText = (this.GetAttribute(nameof(BrokerProducerCommandText)) ?? "").Split(',');
@@ -107,7 +109,8 @@ namespace MetaFrm.ApiServer.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetService : {Message}", ex.Message);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError(ex, "GetService : {Message}", ex.Message);
 
                 response = new()
                 {

@@ -17,6 +17,7 @@ namespace MetaFrm.ApiServer.Controllers
     public class ProjectServiceController(ILogger<ProjectServiceController> logger, Factory _) : ControllerBase, ICore
     {
         private readonly ILogger<ProjectServiceController> _logger = logger;
+        private readonly Factory factory = _;
 
         /// <summary>
         /// Get
@@ -64,7 +65,8 @@ namespace MetaFrm.ApiServer.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetProjectService : {Message}", ex.Message);
+                if (this._logger.IsEnabled(LogLevel.Error))
+                    this._logger.LogError(ex, "GetProjectService : {Message}", ex.Message);
             }
 
             return Ok(null);
