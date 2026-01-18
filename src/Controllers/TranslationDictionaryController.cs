@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
+using System.Net.Mime;
 
 namespace MetaFrm.ApiServer.Controllers
 {
@@ -28,7 +29,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// Get
         /// </summary>
         /// <returns></returns>
-        [HttpGet(Name = "GetTranslationDictionary")]
+        [HttpGet]
         public IActionResult? Get()
         {
             string key;
@@ -45,7 +46,7 @@ namespace MetaFrm.ApiServer.Controllers
                 HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/TranslationDictionary")
                 {
                     Headers = {
-                        { HeaderNames.Accept, "application/json" },
+                        { HeaderNames.Accept, MediaTypeNames.Application.Json },
                         { "AccessKey", Factory.AccessKey },
                     }
                 };

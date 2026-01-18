@@ -35,7 +35,7 @@ namespace MetaFrm.ApiServer.Controllers
 
             this.CreateInstance("BrokerConsumer", true, true, [this.GetAttribute("BrokerConnectionString"), this.GetAttribute("BrokerQueueName")]);
 
-            if (!Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)) && !this.GetAttribute("BrokerQueueNameParallel").IsNullOrEmpty())
+            if (!Factory.IsRegisterInstance(nameof(BrokerProducerCommandTextParallel)) && !string.IsNullOrEmpty(this.GetAttribute("BrokerQueueNameParallel")))
             {
                 ICore? serviceString = this.CreateInstance("BrokerProducer", false, true, [this.GetAttribute("BrokerConnectionStringParallel"), this.GetAttribute("BrokerQueueNameParallel")]);
                 if (serviceString != null)
@@ -49,7 +49,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="token"></param>
         /// <param name="serviceData"></param>
         /// <returns></returns>
-        [HttpPost(Name = "GetService")]
+        [HttpPost]
         [Authorize]
         public IActionResult Get([FromHeader] string token, ServiceData serviceData)
         {
@@ -72,7 +72,7 @@ namespace MetaFrm.ApiServer.Controllers
                             return this.BadRequest("No CommandText.");
                 }
 
-                if (!serviceData.ServiceName.IsNullOrEmpty())
+                if (!string.IsNullOrEmpty(serviceData.ServiceName))
                     response = ((IService)Factory.CreateInstance(serviceData.ServiceName)).Request(serviceData);
                 else
                 {

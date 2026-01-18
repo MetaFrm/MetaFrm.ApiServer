@@ -1,20 +1,22 @@
-﻿using MetaFrm.Api.Models;
+﻿using MetaFrm.Api;
+using MetaFrm.Api.Models;
 using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
 
-namespace MetaFrm.ApiServer.Controllers
+namespace MetaFrm.ApiServer.Controllers.V1
 {
     /// <summary>
     /// AssemblyAttributeController
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="_"></param>
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class AssemblyAttributeController(ILogger<AssemblyAttributeController> logger, Factory _) : ControllerBase, ICore
     {
@@ -24,51 +26,58 @@ namespace MetaFrm.ApiServer.Controllers
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
         /// </summary>
-        private static ConcurrentDictionary<string, AssemblyAttribute> AssemblyAttributes { get; set; } = [];
+        private static ConcurrentDictionary<string, AssemblyAttributeShort> AssemblyAttributes { get; set; } = [];
 
         /// <summary>
         /// Get
         /// </summary>
-        /// <param name="token"></param>
         /// <param name="fullNamespace"></param>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        public IActionResult? Get([FromHeader] string token, string fullNamespace)
+        public IActionResult? Get(string fullNamespace)
         {
             string key;
             string path;
+            AuthorizeToken? authorizeToken;
 
-            if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken) || authorizeToken == null)
+            authorizeToken = Request.GetAuthorizeToken();
+
+            if (authorizeToken == null || authorizeToken.Token == null)
+            {
+                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid token. {fullNamespace}", fullNamespace);
+
                 return Ok(null);
+            }
 
             key = string.Format("{0}.{1}.{2}", authorizeToken.ProjectServiceBase.ProjectID, authorizeToken.ProjectServiceBase.ServiceID, fullNamespace);
             path = Path.Combine(Factory.FolderPathDat, $"{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}_A.dat");
 
-            if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value))
+            if (AssemblyAttributes.TryGetValue(key, out AssemblyAttributeShort? value))
                 return Ok(value);
 
             try
             {
-                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/AssemblyAttribute?fullNamespace={fullNamespace}")
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/{Factory.ApiVersion}/AssemblyAttribute?fullNamespace={fullNamespace}")
                 {
                     Headers = {
                         { HeaderNames.Accept, MediaTypeNames.Application.Json },
-                        { "token", authorizeToken.UserKey },
                     }
                 };
+
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(Headers.Bearer, authorizeToken.UserKey);
 
                 HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
 
                 if (httpResponseMessage.IsSuccessStatusCode)
                 {
-                    AssemblyAttribute? assemblyAttribute;
-                    assemblyAttribute = httpResponseMessage.Content.ReadFromJsonAsync<AssemblyAttribute>().Result;
+                    AssemblyAttributeShort? assemblyAttribute;
+                    assemblyAttribute = httpResponseMessage.Content.ReadFromJsonAsync<AssemblyAttributeShort>().Result;
 
                     if (assemblyAttribute != null)
                     {
                         if (!AssemblyAttributes.TryAdd(key, assemblyAttribute) && this._logger.IsEnabled(LogLevel.Warning))
-                            this._logger.LogWarning("GetAssemblyAttribute AssemblyAttributes TryAdd Fail : {key}", key);
+                            this._logger.LogWarning("AssemblyAttributes TryAdd Fail. {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
 
                         Task.Run(delegate
                         {
@@ -80,16 +89,20 @@ namespace MetaFrm.ApiServer.Controllers
             catch (Exception ex)
             {
                 if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "GetAssemblyAttribute : {Message}", ex.Message);
+                    this._logger.LogError(ex, "Exception. {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
 
                 if (!AssemblyAttributes.TryAdd(key, Factory.LoadInstance<AssemblyAttribute>(path)) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("GetAssemblyAttribute AssemblyAttributes TryAdd Factory.LoadInstance Fail : {key}, {path}", key, path);
+                    this._logger.LogWarning("AssemblyAttributes TryAdd(Factory.LoadInstance) Fail. {Token}, {key}, {path}, {fullNamespace}", authorizeToken.Token, key, path, fullNamespace);
             }
 
-            if (AssemblyAttributes.TryGetValue(key, out AssemblyAttribute? value2))
+            if (AssemblyAttributes.TryGetValue(key, out AssemblyAttributeShort? value2))
                 return Ok(value2);
             else
+            {
+                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("AssemblyAttributes TryGetValue(key) Fail. {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
+
                 return Ok(null);
+            }
         }
     }
 }

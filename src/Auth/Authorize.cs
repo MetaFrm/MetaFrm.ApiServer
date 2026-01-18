@@ -1,4 +1,5 @@
-﻿using MetaFrm.Database;
+﻿using MetaFrm.Auth;
+using MetaFrm.Database;
 using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ namespace MetaFrm.ApiServer.Auth
     {
         static bool IsFirst = true;
         static Authorize? Instance;
-        static string? Type = "FILE";
+        static string? Type = AuthType.File;
         static readonly Lock lockObject = new();
         static readonly string path = Path.Combine(Factory.FolderPathDat, "AuthorizeTokenList.dat");
         internal static ConcurrentDictionary<string, AuthorizeToken> AuthorizeTokenList = [];
@@ -29,14 +30,14 @@ namespace MetaFrm.ApiServer.Auth
 
         private static void LoadToken()
         {
-            Type = Instance == null ? "FILE" : Instance.GetAttribute("Type");
+            Type = Instance == null ? AuthType.File : Instance.GetAttribute("Type");
 
             switch (Type)
             {
-                case "DB":
+                case AuthType.DataBase:
                     LoadTokenDB();
                     break;
-                case "FILE":
+                case AuthType.File:
                     LoadTokenFile();
                     break;
             }
@@ -120,8 +121,8 @@ namespace MetaFrm.ApiServer.Auth
                     {
                         return Type switch
                         {
-                            "DB" => IsTokenDB(token, tokenType),
-                            "FILE" => false,
+                            AuthType.DataBase => IsTokenDB(token, tokenType),
+                            AuthType.File => false,
                             _ => false,
                         };
                     }
@@ -139,8 +140,8 @@ namespace MetaFrm.ApiServer.Auth
                 {
                     return Type switch
                     {
-                        "DB" => IsTokenDB(token, tokenType),
-                        "FILE" => false,
+                        AuthType.DataBase => IsTokenDB(token, tokenType),
+                        AuthType.File => false,
                         _ => false,
                     };
                 }
@@ -258,10 +259,10 @@ namespace MetaFrm.ApiServer.Auth
                 {
                     switch (Type)
                     {
-                        case "DB":
+                        case AuthType.DataBase:
                             SaveTokenDB(authorizeToken);
                             break;
-                        case "FILE":
+                        case AuthType.File:
                             SaveTokenFile();
                             break;
                     }
@@ -281,7 +282,7 @@ namespace MetaFrm.ApiServer.Auth
             ServiceData data = new();
             data["1"].CommandText = Instance.GetAttribute("Save");
             data["1"].AddParameter("TOKEN_STR", DbType.NVarChar, 100, authorizeToken.Token);
-            data["1"].AddParameter("EXPIRY_DATETIME", DbType.DateTime, 0, authorizeToken.ExpiryDateTime);
+            data["1"].AddParameter("EXPIRY_DATETIME", DbType.DateTime, 0, authorizeToken.ExpiryDate);
             data["1"].AddParameter("PROJECT_ID", DbType.Decimal, 18, authorizeToken.ProjectServiceBase.ProjectID);
             data["1"].AddParameter("SERVICE_ID", DbType.Decimal, 18, authorizeToken.ProjectServiceBase.ServiceID);
             data["1"].AddParameter("TOKEN_TYPE", DbType.NVarChar, 50, authorizeToken.TokenType);

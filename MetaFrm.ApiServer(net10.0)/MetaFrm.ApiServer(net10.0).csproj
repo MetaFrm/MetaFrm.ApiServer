@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>MetaFrm.ApiServer.net10.0</PackageId>
-    <Version>10.0.1.5</Version>
+    <Version>10.0.1.8</Version>
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2026. dsun all rights reserved.</Copyright>
@@ -53,6 +53,13 @@
     <Compile Include="..\src\Controllers\ProjectServiceController.cs" Link="Controllers\ProjectServiceController.cs" />
     <Compile Include="..\src\Controllers\ServiceController.cs" Link="Controllers\ServiceController.cs" />
     <Compile Include="..\src\Controllers\TranslationDictionaryController.cs" Link="Controllers\TranslationDictionaryController.cs" />
+    <Compile Include="..\src\Controllers\V1\AccessCodeController.cs" Link="Controllers\V1\AccessCodeController.cs" />
+    <Compile Include="..\src\Controllers\V1\AssemblyAttributeController.cs" Link="Controllers\V1\AssemblyAttributeController.cs" />
+    <Compile Include="..\src\Controllers\V1\AssemblyController.cs" Link="Controllers\V1\AssemblyController.cs" />
+    <Compile Include="..\src\Controllers\V1\LoginController.cs" Link="Controllers\V1\LoginController.cs" />
+    <Compile Include="..\src\Controllers\V1\ProjectServiceController.cs" Link="Controllers\V1\ProjectServiceController.cs" />
+    <Compile Include="..\src\Controllers\V1\ServiceController.cs" Link="Controllers\V1\ServiceController.cs" />
+    <Compile Include="..\src\Controllers\V1\TranslationDictionaryController.cs" Link="Controllers\V1\TranslationDictionaryController.cs" />
     <Compile Include="..\src\Extensions.cs" Link="Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,11 +67,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
-    <PackageReference Include="MetaFrm.Core.net10.0" Version="10.0.1.5" />
+    <PackageReference Include="MetaFrm.Core.net10.0" Version="10.0.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.11" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.11" />
     <PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.14" />

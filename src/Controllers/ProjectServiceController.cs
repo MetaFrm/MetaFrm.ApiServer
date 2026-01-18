@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.Mime;
 
 namespace MetaFrm.ApiServer.Controllers
 {
@@ -24,7 +25,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// </summary>
         /// <param name="accessKey"></param>
         /// <returns></returns>
-        [HttpGet(Name = "GetProjectService")]
+        [HttpGet]
         public IActionResult? Get([FromHeader] string accessKey)
         {
             var projectServiceBase = accessKey.AesDecryptorAndDeserialize<ProjectServiceBase>();
@@ -43,7 +44,7 @@ namespace MetaFrm.ApiServer.Controllers
                 HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/ProjectService")
                 {
                     Headers = {
-                        { HeaderNames.Accept, "application/json" },
+                        { HeaderNames.Accept, MediaTypeNames.Application.Json },
                         { "AccessKey", accessKey },
                     }
                 };
@@ -57,7 +58,7 @@ namespace MetaFrm.ApiServer.Controllers
 
                     if (projectService != null)
                     {
-                        projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays")), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken;
+                        projectService.Token = Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "PROJECT_SERVICE", TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays")), projectService.Token, this.HttpContext.Connection.RemoteIpAddress?.ToString()).Token;
 
                         return Ok(projectService);
                     }

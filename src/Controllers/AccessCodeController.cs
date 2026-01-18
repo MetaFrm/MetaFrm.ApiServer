@@ -38,7 +38,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="accessGroup"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        [HttpGet(Name = "GetAccessCode")]
+        [HttpGet]
         [Authorize]
         public IActionResult? Get([FromHeader] string token, [FromHeader] string accessGroup, string email)
         {

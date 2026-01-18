@@ -43,6 +43,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaFrm.ApiServer(net10.0)", "MetaFrm.ApiServer(net10.0)\MetaFrm.ApiServer(net10.0).csproj", "{1819D2FD-E257-A012-39FB-A580BBEC4AC9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "V1", "V1", "{EF80E76E-2A88-47B8-A28E-471A9FDDE3C3}"
+	ProjectSection(SolutionItems) = preProject
+		src\Controllers\V1\AccessCodeController.cs = src\Controllers\V1\AccessCodeController.cs
+		src\Controllers\V1\AssemblyAttributeController.cs = src\Controllers\V1\AssemblyAttributeController.cs
+		src\Controllers\V1\AssemblyController.cs = src\Controllers\V1\AssemblyController.cs
+		src\Controllers\V1\LoginController.cs = src\Controllers\V1\LoginController.cs
+		src\Controllers\V1\ProjectServiceController.cs = src\Controllers\V1\ProjectServiceController.cs
+		src\Controllers\V1\ServiceController.cs = src\Controllers\V1\ServiceController.cs
+		src\Controllers\V1\TranslationDictionaryController.cs = src\Controllers\V1\TranslationDictionaryController.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +72,7 @@ Global
 		{CCD9FD40-A0CE-4836-A674-9EF4D4D21600} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 		{60806BEC-8D59-4CA0-85FC-EDF23E262230} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 		{DB869435-5F91-4CE2-981F-3EFC20A4A64A} = {4B9E71C4-F9DE-445A-8C8B-CB1DF2D40778}
+		{EF80E76E-2A88-47B8-A28E-471A9FDDE3C3} = {CCD9FD40-A0CE-4836-A674-9EF4D4D21600}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BE3F2316-703F-4F14-91A0-F0E141FAA7CC}

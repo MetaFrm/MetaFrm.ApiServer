@@ -7,6 +7,8 @@ namespace MetaFrm.ApiServer.Auth
     /// </summary>
     public class AuthorizeToken : ICore
     {
+        internal static int? ExpiryTimeSpanFromDays { get; private set; }
+
         /// <summary>
         /// Token
         /// </summary>
@@ -15,12 +17,12 @@ namespace MetaFrm.ApiServer.Auth
         /// <summary>
         /// Create Utc DateTime
         /// </summary>
-        public DateTime CreateDateTime { get; set; } = DateTime.Now;
+        public DateTime CreateDateTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Expiry Utc DateTime
         /// </summary>
-        public DateTime ExpiryDateTime { get; set; }
+        public DateTime ExpiryDate { get; set; }
 
         private TimeSpan expiryTimeSpan;
         /// <summary>
@@ -35,7 +37,7 @@ namespace MetaFrm.ApiServer.Auth
             set
             {
                 this.expiryTimeSpan = value;
-                this.ExpiryDateTime = CreateDateTime.AddTicks(this.expiryTimeSpan.Ticks);
+                this.ExpiryDate = CreateDateTime.AddTicks(this.expiryTimeSpan.Ticks);
             }
         }
 
@@ -46,18 +48,7 @@ namespace MetaFrm.ApiServer.Auth
         {
             get
             {
-                return this.ExpiryDateTime < DateTime.Now;
-            }
-        }
-
-        /// <summary>
-        /// GetToken
-        /// </summary>
-        public string? GetToken
-        {
-            get
-            {
-                return this.Token;
+                return this.ExpiryDate < DateTime.UtcNow;
             }
         }
 
@@ -86,7 +77,9 @@ namespace MetaFrm.ApiServer.Auth
         /// </summary>
         public AuthorizeToken()
         {
-            this.ExpiryTimeSpan = TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays"));
+            ExpiryTimeSpanFromDays ??= this.GetAttributeInt("ExpiryTimeSpanFromDays");
+
+            this.ExpiryTimeSpan = TimeSpan.FromDays((int)ExpiryTimeSpanFromDays);
             this.ProjectServiceBase = new();
             this.CreateToken();
         }
@@ -111,8 +104,10 @@ namespace MetaFrm.ApiServer.Auth
         /// <param name="ip"></param>
         public AuthorizeToken(string tokenType, string token, string? userKey, string? ip)
         {
+            ExpiryTimeSpanFromDays ??= this.GetAttributeInt("ExpiryTimeSpanFromDays");
+
             this.TokenType = tokenType;
-            this.ExpiryTimeSpan = TimeSpan.FromDays(this.GetAttributeInt("ExpiryTimeSpanFromDays"));
+            this.ExpiryTimeSpan = TimeSpan.FromDays((int)ExpiryTimeSpanFromDays);
             this.ProjectServiceBase = new();
             this.Token = token;
             this.UserKey = userKey;
@@ -167,17 +162,17 @@ namespace MetaFrm.ApiServer.Auth
         /// <param name="projectID"></param>
         /// <param name="serviceID"></param>
         /// <param name="tokenType"></param>
-        /// <param name="expiryDateTime"></param>
+        /// <param name="expiryDate"></param>
         /// <param name="userKey"></param>
         /// <param name="ip"></param>
-        public AuthorizeToken(string token, decimal projectID, decimal serviceID, string tokenType, DateTime expiryDateTime, string? userKey, string? ip) : this(token, projectID, serviceID, tokenType, userKey, ip)
+        public AuthorizeToken(string token, decimal projectID, decimal serviceID, string tokenType, DateTime expiryDate, string? userKey, string? ip) : this(token, projectID, serviceID, tokenType, userKey, ip)
         {
-            this.ExpiryDateTime = expiryDateTime;
+            this.ExpiryDate = expiryDate;
         }
 
         private void CreateToken()
         {
-            if (this.Token.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(this.Token))
                 this.Token = Guid.NewGuid().ToString().Replace("-", "");
         }   
     }

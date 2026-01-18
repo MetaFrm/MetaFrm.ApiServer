@@ -40,7 +40,7 @@ namespace MetaFrm.ApiServer.Controllers
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        [HttpPost(Name = "GetLogin")]
+        [HttpPost]
         public IActionResult Get([FromHeader] string token, string email, string password)
         {
             IService service;
@@ -106,7 +106,7 @@ namespace MetaFrm.ApiServer.Controllers
                                         keyValuePairs.Add($"{name}.{dataColumn.FieldName}", value);
                                 }
 
-                        keyValuePairs.Add("Token", Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "LOGIN", $"USP_LOGIN {email}", this.HttpContext.Connection.RemoteIpAddress?.ToString()).GetToken ?? "");
+                        keyValuePairs.Add("Token", Authorize.CreateToken(projectServiceBase.ProjectID, projectServiceBase.ServiceID, "LOGIN", $"USP_LOGIN {email}", this.HttpContext.Connection.RemoteIpAddress?.ToString()).Token ?? "");
                     }
 
                     return Ok(new UserInfo()
