@@ -134,6 +134,9 @@ namespace MetaFrm.ApiServer.Auth
 
                         return;
 
+                    case string value when value == "/api/TranslationDictionary" || value == $"/api/{Factory.ApiVersion}/TranslationDictionary":
+                        return;
+
                     default:
                         if (!Authorize.IsToken(token, AuthType.ProjectService))
                         {
