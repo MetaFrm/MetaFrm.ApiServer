@@ -62,6 +62,7 @@ namespace MetaFrm.ApiServer.Auth
                                     if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Token error. {value}, {token}, {authHeader}, {accessGroup}", value, token, authHeader, accessGroup);
 
                                     context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                                    return;
                                 }
                                 else
                                     return;
@@ -71,6 +72,7 @@ namespace MetaFrm.ApiServer.Auth
                                 if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError(ex, "Token error. {value}, {token}, {authHeader}", value, token, authHeader);
 
                                 context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                                return;
                             }
                         }
 
@@ -83,17 +85,19 @@ namespace MetaFrm.ApiServer.Auth
                         if (Authorize.IsToken(token, AuthType.Login))
                             return;
 
+                        if (Authorize.IsToken(token, AuthType.ProjectService))
+                            return;
+
                         try
                         {
-                            AuthorizeToken? authorizeToken = null;
+                            var projectServiceBase2 = token.ToString().AesDecryptorAndDeserialize<ProjectServiceBase>();
 
-                            authorizeToken = context.HttpContext.Request.GetAuthorizeToken();
-
-                            if (authorizeToken == null || Factory.ProjectServiceBase == null || authorizeToken.TokenType != AuthType.ProjectService || authorizeToken.ProjectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+                            if (projectServiceBase2 == null || Factory.ProjectServiceBase == null || projectServiceBase2.ProjectID != Factory.ProjectServiceBase.ProjectID)
                             {
-                                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Token error. {value}, {token}, {authHeader}, {ProjectID}, {ProjectID}", value, token, authHeader, authorizeToken?.ProjectServiceBase.ProjectID, Factory.ProjectServiceBase?.ProjectID);
+                                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Token error. {value}, {token}, {authHeader}, {ProjectID}, {ProjectID}", value, token, authHeader, projectServiceBase2?.ProjectID, Factory.ProjectServiceBase?.ProjectID);
 
                                 context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                                return;
                             }
                             else
                                 return;
@@ -103,12 +107,22 @@ namespace MetaFrm.ApiServer.Auth
                             if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError(ex, "Token error. {value}, {token}, {authHeader}", value, token, authHeader);
 
                             context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                            return;
                         }
 
-                        if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Token error. {value}, {token}, {authHeader}", value, token, authHeader);
+                        //AuthorizeToken? authorizeToken = null;
 
-                        context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
-                        return;
+                        //authorizeToken = context.HttpContext.Request.GetAuthorizeToken();
+
+                        //if (authorizeToken == null || Factory.ProjectServiceBase == null || authorizeToken.TokenType != AuthType.ProjectService || authorizeToken.ProjectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
+                        //{
+                        //    if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Token error. {value}, {token}, {authHeader}, {ProjectID}, {ProjectID}", value, token, authHeader, authorizeToken?.ProjectServiceBase.ProjectID, Factory.ProjectServiceBase?.ProjectID);
+
+                        //    context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
+                        //    return;
+                        //}
+                        //else
+                        //    return;
 
                     case string value when value == "/api/Login" || value == $"/api/{Factory.ApiVersion}/Login":
                         if (!Authorize.IsToken(token, AuthType.ProjectService))
