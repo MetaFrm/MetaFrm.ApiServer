@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 env:
   DLL_ID: ${{secrets.DLL_ID_10}} # NET¹öÀü
-  UPLOAD_MODULE: "Y"
+  UPLOAD_MODULE: "N"
   PUSH_NUGET: "Y"
   PASSWORD: ${{secrets.PASSWORD}}
 
@@ -127,5 +127,5 @@ jobs:
       run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "Push to NuGet Fail !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
       
 
-    - name: Completed
-      run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "CI/CD Completed !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
+    # - name: Completed
+    #   run: dotnet "${{env.METAFRM_UPLOADMODULE_FILE}}" "${{secrets.METAFRM_UPLOADMODULE_ACCESSKEY}}" "${{github.event.pusher.email}}^${{env.PASSWORD}}" "notification" "CI/CD Completed !!" "${{env.DLL_PATH}}" "${{vars.NAMESPACE}}"
