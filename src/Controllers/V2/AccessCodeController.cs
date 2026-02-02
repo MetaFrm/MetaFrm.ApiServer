@@ -64,7 +64,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
 
             try
             {
-                //email = email.AesDecryptorToBase64String(authorizeToken.Token, accessGroup);
+                email = email.AesDecryptorToBase64String(authorizeToken.Token, accessGroup);
             }
             catch (Exception ex)
             {

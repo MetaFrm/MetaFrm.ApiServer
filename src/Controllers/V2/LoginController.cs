@@ -67,10 +67,8 @@ namespace MetaFrm.ApiServer.Controllers.V2
 
             try
             {
-                password1 = login.Password;
-                email1 = login.Email;
-                //password1 = login.Password.AesDecryptorToBase64String(login.Email, authorizeToken.Token);
-                //email1 = login.Email.AesDecryptorToBase64String(authorizeToken.Token, AuthType.Login);
+                password1 = login.Password.AesDecryptorToBase64String(login.Email, authorizeToken.Token);
+                email1 = login.Email.AesDecryptorToBase64String(authorizeToken.Token, AuthType.Login);
             }
             catch (Exception ex)
             {
