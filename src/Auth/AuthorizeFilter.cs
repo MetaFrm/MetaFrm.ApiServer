@@ -40,7 +40,7 @@ namespace MetaFrm.ApiServer.Auth
             else
                 switch (context.HttpContext.Request.Path.Value)
                 {
-                    case string value when value == "/api/AccessCode" || value == $"/api/{Factory.ApiVersion}/AccessCode":
+                    case string value when value == "/api/AccessCode" || value == $"/api/v1/AccessCode" || value == $"/api/{Factory.ApiVersion}/AccessCode":
                         if (Authorize.IsToken(token, AuthType.Login))
                             return;
 
@@ -81,7 +81,7 @@ namespace MetaFrm.ApiServer.Auth
                         context.Result = new UnauthorizedObjectResult("Token error.");//인증 오류
                         return;
 
-                    case string value when value == "/api/Service" || value == $"/api/{Factory.ApiVersion}/Service":
+                    case string value when value == "/api/Service" || value == $"/api/v1/Service" || value == $"/api/{Factory.ApiVersion}/Service":
                         if (Authorize.IsToken(token, AuthType.Login))
                             return;
 
@@ -124,7 +124,7 @@ namespace MetaFrm.ApiServer.Auth
                         //else
                         //    return;
 
-                    case string value when value == "/api/Login" || value == $"/api/{Factory.ApiVersion}/Login":
+                    case string value when value == "/api/Login" || value == $"/api/v1/Login" || value == $"/api/{Factory.ApiVersion}/Login":
                         if (!Authorize.IsToken(token, AuthType.ProjectService))
                         {
                             if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Authorization failed. {value}, {token}, {authHeader}", value, token, authHeader);
@@ -134,7 +134,7 @@ namespace MetaFrm.ApiServer.Auth
 
                         return;
 
-                    case string value when value == "/api/TranslationDictionary" || value == $"/api/{Factory.ApiVersion}/TranslationDictionary":
+                    case string value when value == "/api/TranslationDictionary" || value == $"/api/v1/TranslationDictionary" || value == $"/api/{Factory.ApiVersion}/TranslationDictionary":
                         return;
 
                     default:
