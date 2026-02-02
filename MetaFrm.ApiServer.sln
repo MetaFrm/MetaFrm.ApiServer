@@ -10,15 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6FB37B83-4A7
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers", "{CCD9FD40-A0CE-4836-A674-9EF4D4D21600}"
-	ProjectSection(SolutionItems) = preProject
-		src\Controllers\AccessCodeController.cs = src\Controllers\AccessCodeController.cs
-		src\Controllers\AssemblyAttributeController.cs = src\Controllers\AssemblyAttributeController.cs
-		src\Controllers\AssemblyController.cs = src\Controllers\AssemblyController.cs
-		src\Controllers\LoginController.cs = src\Controllers\LoginController.cs
-		src\Controllers\ProjectServiceController.cs = src\Controllers\ProjectServiceController.cs
-		src\Controllers\ServiceController.cs = src\Controllers\ServiceController.cs
-		src\Controllers\TranslationDictionaryController.cs = src\Controllers\TranslationDictionaryController.cs
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{60806BEC-8D59-4CA0-85FC-EDF23E262230}"
 	ProjectSection(SolutionItems) = preProject
@@ -54,6 +45,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "V1", "V1", "{EF80E76E-2A88-
 		src\Controllers\V1\TranslationDictionaryController.cs = src\Controllers\V1\TranslationDictionaryController.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "V2", "V2", "{FFB3E5E1-E2A0-4DB0-876E-E12F86264629}"
+	ProjectSection(SolutionItems) = preProject
+		src\Controllers\V2\AccessCodeController.cs = src\Controllers\V2\AccessCodeController.cs
+		src\Controllers\V2\AssemblyAttributeController.cs = src\Controllers\V2\AssemblyAttributeController.cs
+		src\Controllers\V2\AssemblyController.cs = src\Controllers\V2\AssemblyController.cs
+		src\Controllers\V2\LoginController.cs = src\Controllers\V2\LoginController.cs
+		src\Controllers\V2\ProjectServiceController.cs = src\Controllers\V2\ProjectServiceController.cs
+		src\Controllers\V2\ServiceController.cs = src\Controllers\V2\ServiceController.cs
+		src\Controllers\V2\TranslationDictionaryController.cs = src\Controllers\V2\TranslationDictionaryController.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,7 @@ Global
 		{60806BEC-8D59-4CA0-85FC-EDF23E262230} = {6FB37B83-4A79-4C77-AE0E-30B5245FBF91}
 		{DB869435-5F91-4CE2-981F-3EFC20A4A64A} = {4B9E71C4-F9DE-445A-8C8B-CB1DF2D40778}
 		{EF80E76E-2A88-47B8-A28E-471A9FDDE3C3} = {CCD9FD40-A0CE-4836-A674-9EF4D4D21600}
+		{FFB3E5E1-E2A0-4DB0-876E-E12F86264629} = {CCD9FD40-A0CE-4836-A674-9EF4D4D21600}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BE3F2316-703F-4F14-91A0-F0E141FAA7CC}

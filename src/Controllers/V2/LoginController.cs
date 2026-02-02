@@ -7,12 +7,12 @@ using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace MetaFrm.ApiServer.Controllers.V1
+namespace MetaFrm.ApiServer.Controllers.V2
 {
     /// <summary>
     /// LoginController
     /// </summary>
-    [Route("api/v1/[controller]")]
+    [Route("api/v2/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase, ICore
     {
@@ -67,8 +67,10 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
             try
             {
-                password1 = login.Password.AesDecryptorToBase64String(login.Email, authorizeToken.Token);
-                email1 = login.Email.AesDecryptorToBase64String(authorizeToken.Token, AuthType.Login);
+                password1 = login.Password;
+                email1 = login.Email;
+                //password1 = login.Password.AesDecryptorToBase64String(login.Email, authorizeToken.Token);
+                //email1 = login.Email.AesDecryptorToBase64String(authorizeToken.Token, AuthType.Login);
             }
             catch (Exception ex)
             {

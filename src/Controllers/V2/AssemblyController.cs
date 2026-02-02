@@ -1,18 +1,20 @@
-﻿using MetaFrm.ApiServer.Auth;
+﻿using MetaFrm.Api;
+using MetaFrm.ApiServer.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 
-namespace MetaFrm.ApiServer.Controllers
+namespace MetaFrm.ApiServer.Controllers.V2
 {
     /// <summary>
     /// AssemblyController
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="_"></param>
-    [Route("api/[controller]")]
+    [Route("api/v2/[controller]")]
     [ApiController]
     public class AssemblyController(ILogger<AssemblyController> logger, Factory _) : ControllerBase, ICore
     {
@@ -27,18 +29,24 @@ namespace MetaFrm.ApiServer.Controllers
         /// <summary>
         /// Get
         /// </summary>
-        /// <param name="token"></param>
         /// <param name="fullNamespace"></param>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        public IActionResult? Get([FromHeader] string token, string fullNamespace)
+        public IActionResult? Get(string fullNamespace)
         {
             string key;
             string path;
+            AuthorizeToken? authorizeToken;
 
-            if (!Authorize.AuthorizeTokenList.TryGetValue(token, out AuthorizeToken? authorizeToken) || authorizeToken == null)
+            authorizeToken = Request.GetAuthorizeToken();
+
+            if (authorizeToken == null || authorizeToken.Token == null)
+            {
+                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid token. {fullNamespace}", fullNamespace);
+
                 return Ok(null);
+            }
 
             key = string.Format("{0}.{1}.{2}", authorizeToken.ProjectServiceBase.ProjectID, authorizeToken.ProjectServiceBase.ServiceID, fullNamespace);
             path = Path.Combine(Factory.FolderPathDat, $"{authorizeToken.ProjectServiceBase.ProjectID}_{authorizeToken.ProjectServiceBase.ServiceID}_A_{fullNamespace}.dat");
@@ -48,13 +56,14 @@ namespace MetaFrm.ApiServer.Controllers
 
             try
             {
-                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/Assembly?fullNamespace={fullNamespace}")
+                HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/{Factory.ApiVersion}/Assembly?fullNamespace={fullNamespace}")
                 {
                     Headers = {
                         { HeaderNames.Accept, MediaTypeNames.Text.Plain },
-                        { "token", authorizeToken.UserKey },
                     }
                 };
+
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(Headers.Bearer, authorizeToken.UserKey);
 
                 HttpResponseMessage httpResponseMessage = Factory.HttpClientFactory.CreateClient().SendAsync(httpRequestMessage).Result;
 
@@ -66,7 +75,7 @@ namespace MetaFrm.ApiServer.Controllers
                     if (!string.IsNullOrEmpty(assembly))
                     {
                         if (!AssemblyText.TryAdd(key, assembly) && this._logger.IsEnabled(LogLevel.Warning))
-                            this._logger.LogWarning("GetAssembly AssemblyText TryAdd Fail : {key}", key);
+                            this._logger.LogWarning("AssemblyText TryAdd Fail : {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
 
                         Task.Run(delegate
                         {
@@ -78,16 +87,20 @@ namespace MetaFrm.ApiServer.Controllers
             catch (Exception ex)
             {
                 if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "GetAssembly : {Message}", ex.Message);
+                    this._logger.LogError(ex, "Exception. {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
 
                 if (!AssemblyText.TryAdd(key, Factory.LoadString(path)) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("GetAssembly AssemblyText TryAdd Factory.LoadString Fail : {key}, {path}", key, path);
+                    this._logger.LogWarning("AssemblyText TryAdd(Factory.LoadString) Fail : {Token}, {key}, {path}", authorizeToken.Token, key, path);
             }
 
             if (AssemblyText.TryGetValue(key, out string? value2))
                 return Ok(value2);
             else
+            {
+                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("AssemblyText TryGetValue(key) Fail. {Token}, {key}, {fullNamespace}", authorizeToken.Token, key, fullNamespace);
+
                 return Ok(null);
+            }
         }
     }
 }
