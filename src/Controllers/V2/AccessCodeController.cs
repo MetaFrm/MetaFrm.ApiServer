@@ -57,7 +57,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
 
             if (authorizeToken == null || authorizeToken.Token == null)
             {
-                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid token. {authorizeToken}", authorizeToken);
+                this._logger.Error("Invalid token. {0}", authorizeToken);
 
                 return this.BadRequest("Invalid token.");
             }
@@ -68,8 +68,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
             }
             catch (Exception ex)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "{Token}, {email}, {accessGroup}", authorizeToken.Token, email, accessGroup);
+                this._logger.Error(ex, "{0}, {1}, {2}", authorizeToken.Token, email, accessGroup);
 
                 return this.BadRequest("Access Code generation failed.");
             }
@@ -95,8 +94,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
 
             if (response.Status != Status.OK)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError("{Message} {Token}, {email}, {accessGroup}", response.Message, authorizeToken.Token, email, accessGroup);
+                this._logger.Error("{0} {1}, {2}, {3}", response.Message, authorizeToken.Token, email, accessGroup);
 
                 if (response.Message != null)
                     return this.BadRequest(response.Message);
@@ -112,15 +110,13 @@ namespace MetaFrm.ApiServer.Controllers.V2
                     if (accessCode != null)
                         return Ok(accessCode.AesEncryptToBase64String(authorizeToken.Token, accessGroup));
 
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError("Access Code generation failed(ACCESS_CODE). {Token}, {email}, {accessGroup}", authorizeToken.Token, email, accessGroup);
+                    this._logger.Error("Access Code generation failed(ACCESS_CODE). {0}, {1}, {2}", authorizeToken.Token, email, accessGroup);
 
                     return this.BadRequest("Access Code generation failed.");
                 }
                 else
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError("Access Code generation failed(response.DataSet). {Token}, {email}, {accessGroup}", authorizeToken.Token, email, accessGroup);
+                    this._logger.Error("Access Code generation failed(response.DataSet). {0}, {1}, {2}", authorizeToken.Token, email, accessGroup);
 
                     return this.BadRequest("Access Code generation failed.");
                 }

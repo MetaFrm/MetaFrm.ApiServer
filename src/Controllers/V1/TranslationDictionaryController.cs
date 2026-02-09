@@ -70,8 +70,8 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
                 result.Status = Status.OK;
 
-                if (!TranslationDictionary.TryAdd(key, result) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("TranslationDictionary TryAdd Fail : {key}", key);
+                if (!TranslationDictionary.TryAdd(key, result))
+                    this._logger.Warning("TranslationDictionary TryAdd Fail : {0}", key);
 
                 Task.Run(delegate
                 {
@@ -82,18 +82,17 @@ namespace MetaFrm.ApiServer.Controllers.V1
             }
             catch (Exception ex)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "{key}", key);
+                this._logger.Error(ex, "{0}", key);
 
-                if (!TranslationDictionary.TryAdd(key, Factory.LoadInstance<Response>(path)) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("TranslationDictionary TryAdd(Factory.LoadInstance) Fail : {key}, {path}", key, path);
+                if (!TranslationDictionary.TryAdd(key, Factory.LoadInstance<Response>(path)))
+                    this._logger.Warning("TranslationDictionary TryAdd(Factory.LoadInstance) Fail : {0}, {1}", key, path);
             }
 
             if (TranslationDictionary.TryGetValue(key, out Response? projectService))
                 return Ok(projectService);
             else
             {
-                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("TranslationDictionary TryGetValue(key) Fail. {key}", key);
+                this._logger.Error("TranslationDictionary TryGetValue(key) Fail. {0}", key);
 
                 return Ok(null);
             }

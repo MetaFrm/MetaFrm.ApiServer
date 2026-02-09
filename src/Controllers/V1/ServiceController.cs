@@ -77,14 +77,14 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
                 if (authorizeToken == null)
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid token. {serviceData}", System.Text.Json.JsonSerializer.Serialize(serviceData));
+                    this._logger.Error("Invalid token. {0}", System.Text.Json.JsonSerializer.Serialize(serviceData));
 
                     return this.BadRequest("Invalid token.");
                 }
 
                 if (serviceData.Commands.Count < 1)
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("No command. {Token}, {serviceData}", authorizeToken.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
+                    this._logger.Error("No command. {0}, {1}", authorizeToken.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
 
                     return this.BadRequest("No command.");
                 }
@@ -93,7 +93,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
                     foreach (var command in serviceData.Commands)
                         if (!this.NotAuthorizeCommandText.Contains(command.Value.CommandText))
                         {
-                            if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("No CommandText. {Token}, {serviceData}", authorizeToken.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
+                            this._logger.Error("No CommandText. {0}, {1}", authorizeToken.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
 
                             return this.BadRequest("No CommandText.");
                         }
@@ -135,8 +135,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
             }
             catch (Exception ex)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "{Token}, {serviceData}", authorizeToken?.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
+                this._logger.Error(ex, "{0}, {1}", authorizeToken?.Token, System.Text.Json.JsonSerializer.Serialize(serviceData));
 
                 response = new()
                 {

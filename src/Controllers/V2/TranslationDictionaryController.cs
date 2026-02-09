@@ -1,11 +1,9 @@
 ﻿using MetaFrm.ApiServer.Auth;
-using MetaFrm.Data;
 using MetaFrm.Localization;
 using MetaFrm.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace MetaFrm.ApiServer.Controllers.V2
 {
@@ -24,7 +22,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
         /// <summary>
         /// 키와 값의 컬렉션을 나타냅니다.
         /// </summary>
-        private static ConcurrentDictionary<string, ResponseShort> TranslationDictionary { get; set; } = [];
+        private static ConcurrentDictionary<string, Response> TranslationDictionary { get; set; } = [];
 
         /// <summary>
         /// Get
@@ -40,7 +38,7 @@ namespace MetaFrm.ApiServer.Controllers.V2
             key = $"{Factory.ProjectServiceBase?.ProjectID}.{Factory.ProjectServiceBase?.ServiceID}";
             path = Path.Combine(Factory.FolderPathDat, $"{Factory.ProjectServiceBase?.ProjectID}_{Factory.ProjectServiceBase?.ServiceID}_TD.dat");
 
-            if (TranslationDictionary.TryGetValue(key, out ResponseShort? response))
+            if (TranslationDictionary.TryGetValue(key, out Response? response))
                 return Ok(response);
 
             try
@@ -72,128 +70,29 @@ namespace MetaFrm.ApiServer.Controllers.V2
 
                 result.Status = Status.OK;
 
-
-
-
-
-
-                DataSetShort? dataSetShort = null;
-
-                if (result.DataSet != null)
-                {
-                    List<DataTableShort> dataTableShorts = [];
-
-                    foreach (var table in result.DataSet.DataTables)
-                    {
-                        List<DataColumnShort> dataColumnShorts = [];
-
-                        foreach (var col in table.DataColumns)
-                        {
-                            dataColumnShorts.Add(new()
-                            {
-                                F = col.FieldName,
-                                C = col.Caption,
-                                N = col.DataTypeFullNamespace,
-                            });
-                        }
-
-                        List<DataRowShort> dataRowShorts = [];
-
-                        foreach (var row in table.DataRows)
-                        {
-                            Dictionary<string, DataValueShort> dv = [];
-
-                            foreach (var dataValue in row.Values)
-                            {
-                                dv.Add(dataValue.Key, new()
-                                {
-                                    Vt = dataValue.Value.ValueType,
-                                    C = dataValue.Value.CharValue,
-                                    Cs = dataValue.Value.CharsValue,
-                                    B = dataValue.Value.ByteValue,
-                                    Bs = dataValue.Value.BytesValue,
-                                    Dt = dataValue.Value.DateTimeValue,
-                                    D = dataValue.Value.DecimalValue,
-                                    Do = dataValue.Value.DoubleValue,
-
-                                    F = dataValue.Value.FloatValue,
-                                    I = dataValue.Value.IntValue,
-                                    L = dataValue.Value.LongValue,
-                                    Sb = dataValue.Value.SbyteValue,
-                                    Sbs = dataValue.Value.SbytesValue,
-                                    St = dataValue.Value.ShortValue,
-
-                                    S = dataValue.Value.StringValue,
-                                    Ui = dataValue.Value.UintValue,
-                                    Ul = dataValue.Value.UlongValue,
-                                    Us = dataValue.Value.UshortValue,
-                                    Bl = dataValue.Value.BooleanValue,
-
-                                    G = dataValue.Value.GuidValue,
-                                    Ts = dataValue.Value.TimeSpanValue,
-                                    O = dataValue.Value.DateTimeOffsetValue,
-                                    J = dataValue.Value.JsonValue,
-                                    V = dataValue.Value.VectorValue,
-                                });
-                            }
-
-                            dataRowShorts.Add(new()
-                            {
-                                V = dv,
-                            });
-                        }
-
-                        dataTableShorts.Add(new()
-                        {
-                            N = table.DataTableName,
-                            C = dataColumnShorts,
-                            R = dataRowShorts,
-                        });
-                    }
-
-                    dataSetShort = new()
-                    {
-                        T = dataTableShorts,
-                    };
-                }
-
-                ResponseShort responseShort = new()
-                {
-                    S = result.Status,
-                    M = result.Message,
-                    D = dataSetShort,
-                };
-
-
-
-
-
-
-
-                if (!TranslationDictionary.TryAdd(key, responseShort) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("TranslationDictionary TryAdd Fail : {key}", key);
+                if (!TranslationDictionary.TryAdd(key, result))
+                    this._logger.Warning("TranslationDictionary TryAdd Fail : {0}", key);
 
                 Task.Run(delegate
                 {
-                    Factory.SaveInstance(responseShort, path);
+                    Factory.SaveInstance(result, path);
                 });
 
-                return Ok(responseShort);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "{key}", key);
+                this._logger.Error(ex, "{0}", key);
 
-                if (!TranslationDictionary.TryAdd(key, Factory.LoadInstance<ResponseShort>(path)) && this._logger.IsEnabled(LogLevel.Warning))
-                    this._logger.LogWarning("TranslationDictionary TryAdd(Factory.LoadInstance) Fail : {key}, {path}", key, path);
+                if (!TranslationDictionary.TryAdd(key, Factory.LoadInstance<Response>(path)))
+                    this._logger.Warning("TranslationDictionary TryAdd(Factory.LoadInstance) Fail : {0}, {1}", key, path);
             }
 
-            if (TranslationDictionary.TryGetValue(key, out ResponseShort? projectService))
+            if (TranslationDictionary.TryGetValue(key, out Response? projectService))
                 return Ok(projectService);
             else
             {
-                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("TranslationDictionary TryGetValue(key) Fail. {key}", key);
+                this._logger.Error("TranslationDictionary TryGetValue(key) Fail. {0}", key);
 
                 return Ok(null);
             }

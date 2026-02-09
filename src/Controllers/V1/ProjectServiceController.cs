@@ -38,7 +38,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
             if (accessKey == null || !accessKey.StartsWith($"{Headers.Bearer} "))
             {
-                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid access key. {accessKey}", accessKey);
+                this._logger.Error("Invalid access key.1 {0}", accessKey);
 
                 return this.Unauthorized("Invalid access key.");
             }
@@ -52,16 +52,14 @@ namespace MetaFrm.ApiServer.Controllers.V1
                 }
                 catch (Exception ex)
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError(ex, "{accessKey}", accessKey);
+                    this._logger.Error(ex, "Invalid access key.2 {0}", accessKey);
 
                     return this.Unauthorized("Invalid access key.");
                 }
 
                 if (projectServiceBase == null || Factory.ProjectServiceBase == null || projectServiceBase.ProjectID != Factory.ProjectServiceBase.ProjectID)
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError("Invalid access key. {accessKey}, {ProjectID}, {ServiceID}, {ProjectID}", accessKey, projectServiceBase?.ProjectID, projectServiceBase?.ServiceID, Factory.ProjectServiceBase?.ProjectID);
+                    this._logger.Error("Invalid access key.3 {0}, {1}, {2}, {3}", accessKey, projectServiceBase?.ProjectID, projectServiceBase?.ServiceID, Factory.ProjectServiceBase?.ProjectID);
 
                     return this.Unauthorized("Invalid access key.");
                 }
@@ -70,9 +68,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
                 {
                     HttpRequestMessage httpRequestMessage = new(HttpMethod.Get, $"{Factory.BaseAddress}api/{Factory.ApiVersion}/ProjectService")
                     {
-                        Headers = {
-                        { HeaderNames.Accept, MediaTypeNames.Application.Json },
-                    }
+                        Headers = { { HeaderNames.Accept, MediaTypeNames.Application.Json } }
                     };
 
                     httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(Headers.Bearer, accessKey);
@@ -81,8 +77,8 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
                     if (httpResponseMessage.IsSuccessStatusCode)
                     {
-                        ProjectServiceShort? projectService;
-                        projectService = httpResponseMessage.Content.ReadFromJsonAsync<ProjectServiceShort>().Result;
+                        ProjectService? projectService;
+                        projectService = httpResponseMessage.Content.ReadFromJsonAsync<ProjectService>().Result;
 
                         if (projectService != null)
                         {
@@ -104,8 +100,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
                 }
                 catch (Exception ex)
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError(ex, "{accessKey}, {ProjectID}, {ServiceID}", accessKey, projectServiceBase.ProjectID, projectServiceBase.ServiceID);
+                    this._logger.Error(ex, "{0}, {1}, {2}", accessKey, projectServiceBase.ProjectID, projectServiceBase.ServiceID);
                 }
 
                 return Ok(null);

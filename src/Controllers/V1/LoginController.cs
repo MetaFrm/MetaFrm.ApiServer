@@ -60,7 +60,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
             if (authorizeToken == null || authorizeToken.Token == null)
             {
-                if (this._logger.IsEnabled(LogLevel.Error)) this._logger.LogError("Invalid token. {Email}", login.Email);
+                this._logger.Error("Invalid token. {0}", login.Email);
 
                 return this.Unauthorized("Token error.");
             }
@@ -72,8 +72,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
             }
             catch (Exception ex)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError(ex, "{Email}, {email1}", login.Email, email1);
+                this._logger.Error(ex, "{0}, {1}", login.Email, email1);
 
                 return this.Unauthorized("Authorization failed.");
             }
@@ -98,8 +97,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
 
             if (response.Status != Status.OK)
             {
-                if (this._logger.IsEnabled(LogLevel.Error))
-                    this._logger.LogError("{Message} {token}, {Email}, {email}", response.Message, authorizeToken.Token, login.Email, email1);
+                this._logger.Error("{0} {1}, {2}, {3}", response.Message, authorizeToken.Token, login.Email, email1);
 
                 return Ok(new UserInfo()
                 {
@@ -140,8 +138,7 @@ namespace MetaFrm.ApiServer.Controllers.V1
                 }
                 else
                 {
-                    if (this._logger.IsEnabled(LogLevel.Error))
-                        this._logger.LogError("Account information is missing. {token}, {Email}, {email}", authorizeToken.Token, login.Email, email1);
+                    this._logger.Error("Account information is missing. {0}, {1}, {2}", authorizeToken.Token, login.Email, email1);
                     return Ok(null);
                 }
             }
