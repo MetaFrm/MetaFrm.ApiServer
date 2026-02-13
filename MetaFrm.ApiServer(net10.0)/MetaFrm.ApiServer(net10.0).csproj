@@ -1,30 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MetaFrm.ApiServer</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <AssemblyName>MetaFrm.ApiServer</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>MetaFrm.ApiServer.net10.0</PackageId>
-    <Version>10.0.1.20</Version>
+    <Version>10.0.3.0</Version>
     <Authors>dsun</Authors>
     <Company>Meta Framework</Company>
     <Copyright>Copyright 2026. dsun all rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MetaFrm/MetaFrm.ApiServer</RepositoryUrl>
     <PackageTags>meta;framework;dotnet;maui;</PackageTags>
-    <IsPackable>true</IsPackable>
     <SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss:fffZ"))</SourceRevisionId>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
     <Title>Meta Framework ApiServer</Title>
-    <Product>Meta Framework ApiServer</Product>
     <Description>Meta Framework
 (Multi platform &amp; Meta management)</Description>
+    <Product>Meta Framework ApiServer</Product>
     <PackageIcon>icon.png</PackageIcon>
-    <OutputType>Library</OutputType>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\readme.md" Pack="true" PackagePath="\" />
@@ -32,15 +32,6 @@
   <ItemGroup>
     <ProjectCapability Include="AspNetCore" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="dat\**" />
-    <Content Remove="dat\**" />
-    <EmbeddedResource Remove="dat\**" />
-    <None Remove="dat\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Controllers\JoinAccessCodeController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\src\Auth\Authorize.cs" Link="Auth\Authorize.cs" />
@@ -67,11 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
-    <PackageReference Include="MetaFrm.Core.net10.0" Version="10.0.1.20" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="MetaFrm.Core.net10.0" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.12.36" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.38" />
     <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.11" />
     <PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.14" />
